@@ -1,35 +1,185 @@
-import React from "react";
-import { View, Text, StyleSheet, TextInput } from "react-native";
+import React, { useState } from "react";
+import { StyleSheet, ScrollView, StatusBar } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Feather } from "@expo/vector-icons";
-import { COLORS } from "@/constants/Colors";
-import { GlassView } from "@/components/common";
+import * as Haptics from "expo-haptics";
 
-// Màn hình Tìm kiếm hỗ trợ người dùng lọc tìm các bài hát, ca sĩ và album yêu thích
+import { COLORS } from "@/constants/Colors";
+import { Header } from "@/components/common";
+import {
+  CategoryList,
+  RecentSearch,
+  SearchBar,
+  SearchResults,
+  CategoryDetail,
+  VoiceSearchOverlay,
+} from "@/components/search";
+import { MOCK_ALL_TRACKS } from "@/constants/MockData";
+
+export interface CategoryProps {
+  id: string;
+  title: string;
+  colors: [string, string];
+  coverUrl: string;
+}
+
+// Danh sách thể loại nhạc giả lập với màu gradient và hình ảnh
+const CATEGORIES: CategoryProps[] = [
+  {
+    id: "c1",
+    title: "Pop",
+    colors: ["#ec4899", "#f43f5e"] as [string, string],
+    coverUrl:
+      "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=150&auto=format&fit=crop",
+  },
+  {
+    id: "c2",
+    title: "Rock",
+    colors: ["#5b21b6", "#3b82f6"] as [string, string],
+    coverUrl:
+      "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=150&auto=format&fit=crop",
+  },
+  {
+    id: "c3",
+    title: "EDM",
+    colors: ["#06b6d4", "#0891b2"] as [string, string],
+    coverUrl:
+      "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=150&auto=format&fit=crop",
+  },
+  {
+    id: "c4",
+    title: "Jazz",
+    colors: ["#f59e0b", "#d97706"] as [string, string],
+    coverUrl:
+      "https://images.unsplash.com/photo-1511192336575-5a79af67a629?q=80&w=150&auto=format&fit=crop",
+  },
+  {
+    id: "c5",
+    title: "Hip Hop",
+    colors: ["#7c3aed", "#6d28d9"] as [string, string],
+    coverUrl:
+      "https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?q=80&w=150&auto=format&fit=crop",
+  },
+  {
+    id: "c6",
+    title: "Indie",
+    colors: ["#10b981", "#059669"] as [string, string],
+    coverUrl:
+      "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?q=80&w=150&auto=format&fit=crop",
+  },
+];
+
+// Màn hình Tìm kiếm hỗ trợ người dùng lọc tìm các bài hát, ca sĩ, album và khám phá danh mục nhạc
 export default function SearchScreen() {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<CategoryProps | null>(
+    null
+  );
+  const [isVoiceActive, setIsVoiceActive] = useState(false);
+  const [recentSearches, setRecentSearches] = useState<string[]>([
+    "Post Malone",
+    "Lofi Beats",
+    "Midnight City",
+    "Daft Punk",
+  ]);
+
+  // Hàm xử lý lưu từ khóa mới vào lịch sử tìm kiếm khi người dùng nhấn nút tìm kiếm
+  const handleSearchSubmit = () => {
+    if (!searchQuery.trim()) return;
+    const term = searchQuery.trim();
+    const filtered = recentSearches.filter((item) => item !== term);
+    setRecentSearches([term, ...filtered]);
+  };
+
+  // Hàm xóa toàn bộ từ khóa trong lịch sử tìm kiếm gần đây
+  const handleClearAll = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+    setRecentSearches([]);
+  };
+
+  // Hàm điền nhanh từ khóa lịch sử đã chọn lên ô tìm kiếm để thực hiện truy vấn
+  const handleSelectRecent = (term: string) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+    setSearchQuery(term);
+  };
+
+  // Hàm xóa nội dung ô tìm kiếm hiện tại để quay về trạng thái khám phá ban đầu
+  const handleClearSearch = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+    setSearchQuery("");
+  };
+
+  // Hàm xử lý nhận kết quả từ chức năng tìm kiếm giọng nói giả lập
+  const handleVoiceSpeechResult = (result: string) => {
+    setIsVoiceActive(false);
+    setSearchQuery(result);
+  };
+
+  // Lọc danh sách bài hát khớp với từ khóa tìm kiếm của người dùng
+  const searchResults = MOCK_ALL_TRACKS.filter(
+    (track) =>
+      track.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      track.artist.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Search</Text>
-      </View>
-      <GlassView style={styles.searchContainer}>
-        <Feather
-          name="search"
-          size={20}
-          color={COLORS.TEXT_SECONDARY}
-          style={styles.searchIcon}
+      <StatusBar barStyle="light-content" />
+
+      {selectedCategory ? (
+        <CategoryDetail
+          category={selectedCategory}
+          onBack={() => setSelectedCategory(null)}
         />
-        <TextInput
-          placeholder="Artists, songs, or lyrics..."
-          placeholderTextColor={COLORS.TEXT_SECONDARY}
-          style={styles.searchInput}
-        />
-      </GlassView>
-      <View style={styles.placeholderContainer}>
-        <Text style={styles.placeholderText}>
-          Search for your favorite audio tracks
-        </Text>
-      </View>
+      ) : (
+        <>
+          <Header />
+          <ScrollView
+            contentContainerStyle={styles.scrollContainer}
+            showsVerticalScrollIndicator={false}
+          >
+            {/* Thanh tìm kiếm */}
+            <SearchBar
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+              handleSearchSubmit={handleSearchSubmit}
+              onClear={handleClearSearch}
+              onVoicePress={() => setIsVoiceActive(true)}
+            />
+
+            {searchQuery ? (
+              /* Giao diện hiển thị kết quả tìm kiếm */
+              <SearchResults
+                results={searchResults}
+                searchQuery={searchQuery}
+              />
+            ) : (
+              <>
+                {/* Lịch sử tìm kiếm gần đây */}
+                {recentSearches.length > 0 && (
+                  <RecentSearch
+                    recentSearches={recentSearches}
+                    handleClearAll={handleClearAll}
+                    handleSelectRecent={handleSelectRecent}
+                  />
+                )}
+
+                {/* Danh mục khám phá thể loại nhạc */}
+                <CategoryList
+                  categories={CATEGORIES}
+                  onSelectCategory={setSelectedCategory}
+                />
+              </>
+            )}
+          </ScrollView>
+        </>
+      )}
+
+      {/* Lớp phủ tìm kiếm bằng giọng nói giả lập */}
+      <VoiceSearchOverlay
+        visible={isVoiceActive}
+        onClose={() => setIsVoiceActive(false)}
+        onSpeechResult={handleVoiceSpeechResult}
+      />
     </SafeAreaView>
   );
 }
@@ -39,43 +189,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.BACKGROUND,
   },
-  header: {
-    paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 16,
-  },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: "700",
-    color: COLORS.TEXT_PRIMARY,
-    fontFamily: "Outfit",
-  },
-  searchContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginHorizontal: 20,
-    paddingHorizontal: 12,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: COLORS.GLASS_FILL,
-  },
-  searchIcon: {
-    marginRight: 8,
-  },
-  searchInput: {
-    flex: 1,
-    color: COLORS.TEXT_PRIMARY,
-    fontFamily: "Inter",
-    fontSize: 14,
-  },
-  placeholderContainer: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  placeholderText: {
-    color: COLORS.TEXT_SECONDARY,
-    fontFamily: "Inter",
-    fontSize: 14,
+  scrollContainer: {
+    paddingBottom: 160,
   },
 });

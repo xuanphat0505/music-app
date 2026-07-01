@@ -1,34 +1,48 @@
-import React, { useState } from "react";
-import { StyleSheet, Text, View, Image, TouchableOpacity } from "react-native";
-import { Feather } from "@expo/vector-icons";
+import React from "react";
+import {
+  StyleSheet,
+  Text,
+  View,
+  Image,
+  TouchableOpacity,
+  StyleProp,
+  ViewStyle,
+} from "react-native";
 import { COLORS } from "@/constants/Colors";
-import { GlassView } from "../common";
 import { Track, usePlayerStore } from "@/store/playerStore";
+import { GlassView } from "./GlassView";
 
-interface TrendingSongRowProps {
+interface SongContainerProps {
   song: Track;
-  plays: string;
+  subtitle?: string;
+  rightElement?: React.ReactNode;
+  style?: StyleProp<ViewStyle>;
+  onPress?: () => void;
 }
 
-// Dòng hiển thị bài hát xu hướng nằm trong hộp kính mờ hỗ trợ tương tác yêu thích và phát nhạc nhanh
-export const TrendingSongRow: React.FC<TrendingSongRowProps> = ({
+// Component dùng chung hiển thị một dòng thông tin bài hát trong hộp kính mờ
+export const SongContainer: React.FC<SongContainerProps> = ({
   song,
-  plays,
+  subtitle,
+  rightElement,
+  style,
+  onPress,
 }) => {
-  const playTrack = usePlayerStore((state) => state.playTrack);
   const currentTrack = usePlayerStore((state) => state.currentTrack);
-  const [isLiked, setIsLiked] = useState(false);
-
   const isActive = currentTrack?.id === song.id;
 
   return (
     <GlassView
-      style={[styles.container, isActive ? styles.activeContainer : undefined]}
+      style={[
+        styles.container,
+        isActive ? styles.activeContainer : undefined,
+        style,
+      ]}
     >
       <TouchableOpacity
         style={styles.clickableArea}
         activeOpacity={0.7}
-        onPress={() => playTrack(song)}
+        onPress={onPress}
       >
         <Image source={{ uri: song.coverUrl }} style={styles.cover} />
         <View style={styles.infoContainer}>
@@ -39,28 +53,14 @@ export const TrendingSongRow: React.FC<TrendingSongRowProps> = ({
             {song.title}
           </Text>
           <Text style={styles.subtitle} numberOfLines={1}>
-            {song.artist} • {plays} plays
+            {subtitle || song.artist}
           </Text>
         </View>
       </TouchableOpacity>
 
-      <View style={styles.actionContainer}>
-        <TouchableOpacity
-          onPress={() => setIsLiked(!isLiked)}
-          style={styles.actionButton}
-          activeOpacity={0.8}
-        >
-          <Feather
-            name={isLiked ? "heart" : "heart"}
-            size={18}
-            color={isLiked ? COLORS.SECONDARY : COLORS.TEXT_PRIMARY}
-            style={isLiked && styles.likedIcon}
-          />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.actionButton} activeOpacity={0.8}>
-          <Feather name="more-vertical" size={18} color={COLORS.TEXT_PRIMARY} />
-        </TouchableOpacity>
-      </View>
+      {rightElement && (
+        <View style={styles.actionContainer}>{rightElement}</View>
+      )}
     </GlassView>
   );
 };
@@ -72,7 +72,6 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     padding: 10,
     marginBottom: 10,
-    marginHorizontal: 20,
   },
   activeContainer: {
     borderColor: COLORS.PRIMARY,
@@ -114,11 +113,4 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 4,
   },
-  actionButton: {
-    padding: 8,
-  },
-  likedIcon: {
-    // Nếu thích thì tô màu và hiệu ứng
-  },
 });
-export default TrendingSongRow;

@@ -9,10 +9,10 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { COLORS } from "@/constants/Colors";
+import { Header } from "@/components/common";
 import {
-  HomeHeader,
   FeaturedAlbumCard,
-  TrendingSongRow,
+  TrendingSong,
   WelcomeSection,
   RecentPlayGrid,
 } from "@/components/home";
@@ -99,7 +99,7 @@ export default function HomeScreen() {
         contentContainerStyle={styles.scrollContainer}
         showsVerticalScrollIndicator={false}
       >
-        <HomeHeader />
+        <Header />
 
         {/* Phần chào hỏi người dùng */}
         <WelcomeSection />
@@ -131,7 +131,7 @@ export default function HomeScreen() {
         </View>
         <View style={styles.songsList}>
           {MOCK_SONGS.map((song) => (
-            <TrendingSongRow key={song.id} song={song} plays={song.plays} />
+            <TrendingSong key={song.id} song={song} plays={song.plays} />
           ))}
         </View>
       </ScrollView>

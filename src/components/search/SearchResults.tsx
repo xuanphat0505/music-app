@@ -1,0 +1,108 @@
+import React from "react";
+import { StyleSheet, Text, View, TouchableOpacity } from "react-native";
+import { Feather } from "@expo/vector-icons";
+import { COLORS } from "@/constants/Colors";
+import { Track, usePlayerStore } from "@/store/playerStore";
+import { SongContainer } from "../common";
+import * as Haptics from "expo-haptics";
+
+interface SearchResultsProps {
+  results: Track[];
+  searchQuery: string;
+}
+
+export const SearchResults: React.FC<SearchResultsProps> = ({
+  results,
+  searchQuery,
+}) => {
+  const playTrack = usePlayerStore((state) => state.playTrack);
+
+  // Hàm kích hoạt phát bài nhạc được nhấn và phản hồi xúc giác rung nhẹ
+  const handlePlaySong = (track: Track) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+    playTrack(track);
+  };
+
+  if (results.length === 0) {
+    return (
+      <View style={styles.noResultsContainer}>
+        <Feather
+          name="search"
+          size={48}
+          color={COLORS.TEXT_SECONDARY}
+          style={styles.noResultsIcon}
+        />
+        <Text style={styles.noResultsTitle}>No results found</Text>
+        <Text style={styles.noResultsSubtitle}>
+          We couldn't find any tracks matching "{searchQuery}"
+        </Text>
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.sectionTitle}>Songs</Text>
+      {results.map((song) => {
+        return (
+          <SongContainer
+            key={song.id}
+            song={song}
+            onPress={() => handlePlaySong(song)}
+            rightElement={
+              <TouchableOpacity style={styles.moreButton} activeOpacity={0.7}>
+                <Feather
+                  name="more-vertical"
+                  size={18}
+                  color={COLORS.TEXT_SECONDARY}
+                />
+              </TouchableOpacity>
+            }
+          />
+        );
+      })}
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    marginHorizontal: 20,
+    marginTop: 16,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: COLORS.TEXT_PRIMARY,
+    fontFamily: "Outfit",
+    marginBottom: 16,
+  },
+  moreButton: {
+    padding: 8,
+  },
+  noResultsContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 40,
+    marginTop: 60,
+  },
+  noResultsIcon: {
+    marginBottom: 16,
+    opacity: 0.8,
+  },
+  noResultsTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: COLORS.TEXT_PRIMARY,
+    fontFamily: "Outfit",
+    marginBottom: 8,
+  },
+  noResultsSubtitle: {
+    fontSize: 13,
+    color: COLORS.TEXT_SECONDARY,
+    fontFamily: "Inter",
+    textAlign: "center",
+    lineHeight: 18,
+  },
+});

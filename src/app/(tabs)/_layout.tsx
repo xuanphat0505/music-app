@@ -5,6 +5,7 @@ import { Feather } from "@expo/vector-icons";
 import { COLORS } from "@/constants/Colors";
 import { MiniPlayer } from "@/components/home";
 import { HapticTab } from "@/components/haptic-tab";
+import { FullPlayerModal } from "@/components/player";
 
 // Bộ bố cục TabLayout cấu hình định dạng thanh điều hướng Bottom Tab Bar
 export default function TabLayout() {
@@ -63,6 +64,7 @@ export default function TabLayout() {
         />
       </Tabs>
       <MiniPlayer />
+      <FullPlayerModal />
     </View>
   );
 }

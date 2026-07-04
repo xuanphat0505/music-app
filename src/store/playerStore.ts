@@ -15,10 +15,12 @@ interface PlayerState {
   progress: number;
   duration: number;
   recentlyPlayed: Track[];
+  isFullPlayerVisible: boolean;
   playTrack: (track: Track) => void;
   togglePlay: () => void;
   setProgress: (progress: number) => void;
   setDuration: (duration: number) => void;
+  setIsFullPlayerVisible: (visible: boolean) => void;
 }
 
 const MOCK_RECENT_TRACKS: Track[] = [
@@ -79,6 +81,7 @@ export const usePlayerStore = create<PlayerState>((set) => ({
   progress: 0,
   duration: 0,
   recentlyPlayed: MOCK_RECENT_TRACKS,
+  isFullPlayerVisible: false,
 
   // Hàm kích hoạt phát một bài hát mới và thiết lập lại các thông số thời gian cùng danh sách phát gần đây
   playTrack: (track) => set((state) => {
@@ -92,6 +95,7 @@ export const usePlayerStore = create<PlayerState>((set) => ({
       progress: 0,
       duration: track.duration,
       recentlyPlayed: updatedList,
+      isFullPlayerVisible: true,
     };
   }),
 
@@ -103,4 +107,7 @@ export const usePlayerStore = create<PlayerState>((set) => ({
 
   // Hàm cập nhật tổng thời lượng của bài hát đang phát
   setDuration: (duration) => set({ duration }),
+
+  // Hàm cập nhật trạng thái hiển thị của trình phát nhạc lớn
+  setIsFullPlayerVisible: (visible) => set({ isFullPlayerVisible: visible }),
 }));

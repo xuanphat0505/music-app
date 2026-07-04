@@ -22,6 +22,7 @@ export const MiniPlayer: React.FC = () => {
     duration,
     togglePlay,
     setProgress,
+    setIsFullPlayerVisible,
   } = usePlayerStore();
 
   // Tạo khoảng thời gian đếm giây giả lập tiến trình phát nhạc khi đang phát
@@ -47,16 +48,22 @@ export const MiniPlayer: React.FC = () => {
     <View style={styles.outerContainer}>
       <GlassView style={styles.container}>
         <View style={styles.content}>
-          <Image source={{ uri: currentTrack.coverUrl }} style={styles.cover} />
+          <TouchableOpacity
+            style={styles.trackPressArea}
+            activeOpacity={0.8}
+            onPress={() => setIsFullPlayerVisible(true)}
+          >
+            <Image source={{ uri: currentTrack.coverUrl }} style={styles.cover} />
 
-          <View style={styles.infoContainer}>
-            <Text style={styles.title} numberOfLines={1}>
-              {currentTrack.title}
-            </Text>
-            <Text style={styles.subtitle} numberOfLines={1}>
-              {currentTrack.artist}
-            </Text>
-          </View>
+            <View style={styles.infoContainer}>
+              <Text style={styles.title} numberOfLines={1}>
+                {currentTrack.title}
+              </Text>
+              <Text style={styles.subtitle} numberOfLines={1}>
+                {currentTrack.artist}
+              </Text>
+            </View>
+          </TouchableOpacity>
 
           <View style={styles.controls}>
             <TouchableOpacity style={styles.iconButton} activeOpacity={0.7}>
@@ -121,6 +128,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 12,
     paddingVertical: 10,
+    gap: 12,
+  },
+  trackPressArea: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
     gap: 12,
   },
   cover: {

@@ -2,9 +2,10 @@ import React from "react";
 import { StyleSheet, Text, View, TouchableOpacity } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { COLORS } from "@/constants/Colors";
-import { Track, usePlayerStore } from "@/store/playerStore";
+import { usePlayerStore } from "@/store/playerStore";
 import { SongContainer } from "../common";
 import * as Haptics from "expo-haptics";
+import { Track } from "@/types";
 
 interface SearchResultsProps {
   results: Track[];

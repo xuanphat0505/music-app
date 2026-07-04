@@ -9,9 +9,9 @@ import {
   PlaylistsSection,
   RecentlyPlayedSection,
   CreatePlaylistModal,
-  type Playlist,
 } from "@/components/library";
-import { usePlayerStore, type Track } from "@/store/playerStore";
+import { usePlayerStore } from "@/store/playerStore";
+import { Playlist, Track } from "@/types";
 
 // Danh sách danh sách phát mẫu với ảnh bìa ghép 2x2 chất lượng cao
 const MOCK_PLAYLISTS: Playlist[] = [

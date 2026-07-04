@@ -3,7 +3,8 @@ import { StyleSheet, TouchableOpacity } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { COLORS } from "@/constants/Colors";
 import { SongContainer } from "../common";
-import { Track, usePlayerStore } from "@/store/playerStore";
+import { usePlayerStore } from "@/store/playerStore";
+import { Track } from "@/types";
 
 interface TrendingSongProps {
   song: Track;

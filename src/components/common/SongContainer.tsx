@@ -9,8 +9,9 @@ import {
   ViewStyle,
 } from "react-native";
 import { COLORS } from "@/constants/Colors";
-import { Track, usePlayerStore } from "@/store/playerStore";
+import { usePlayerStore } from "@/store/playerStore";
 import { GlassView } from "./GlassView";
+import { Track } from "@/types";
 
 interface SongContainerProps {
   song: Track;

@@ -1,14 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, Image, TouchableOpacity, Dimensions } from 'react-native';
 import { COLORS } from '@/constants/Colors';
-
-interface Album {
-  id: string;
-  title: string;
-  artist: string;
-  genre: string;
-  coverUrl: string;
-}
+import { Album } from '@/types';
 
 interface FeaturedAlbumCardProps {
   album: Album;

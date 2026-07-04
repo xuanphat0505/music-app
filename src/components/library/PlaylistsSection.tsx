@@ -1,7 +1,8 @@
 import React from "react";
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity } from "react-native";
 import { COLORS } from "@/constants/Colors";
-import { PlaylistCard, AddPlaylistCard, type Playlist } from "./PlaylistCard";
+import { PlaylistCard, AddPlaylistCard } from "./PlaylistCard";
+import { Playlist } from "@/types";
 
 interface PlaylistsSectionProps {
   playlists: Playlist[];

@@ -16,7 +16,7 @@ import {
   WelcomeSection,
   RecentPlayGrid,
 } from "@/components/home";
-import { Track } from "@/store/playerStore";
+import { Track } from "@/types";
 
 // Danh sách dữ liệu giả lập cho Album nổi bật hiển thị cuộn ngang trên trang chủ
 const MOCK_ALBUMS = [

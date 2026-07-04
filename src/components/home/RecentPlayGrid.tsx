@@ -9,7 +9,8 @@ import {
 } from "react-native";
 import * as Haptics from "expo-haptics";
 import { COLORS } from "@/constants/Colors";
-import { usePlayerStore, Track } from "@/store/playerStore";
+import { usePlayerStore } from "@/store/playerStore";
+import { Track } from "@/types";
 
 // Thành phần lưới hiển thị sáu bài hát vừa phát gần nhất giúp truy cập nhanh trên trang chủ
 export const RecentPlayGrid: React.FC = () => {

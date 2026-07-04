@@ -11,13 +11,13 @@ import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import * as Haptics from "expo-haptics";
 import { COLORS } from "@/constants/Colors";
-import { CategoryProps } from "@/app/(tabs)/search";
 import { MOCK_ALL_TRACKS } from "@/constants/MockData";
-import { Track, usePlayerStore } from "@/store/playerStore";
+import { usePlayerStore } from "@/store/playerStore";
 import { SongContainer } from "@/components/common";
+import { Category, Track } from "@/types";
 
 interface CategoryDetailProps {
-  category: CategoryProps;
+  category: Category;
   onBack: () => void;
 }
 

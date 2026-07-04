@@ -8,8 +8,8 @@ import {
   ProfileHeader,
   MusicDNASection,
   SettingsGroup,
-  SettingItem,
 } from "@/components/profile";
+import { SettingItem } from "@/types";
 
 const MOCK_TOP_ARTISTS = [
   {

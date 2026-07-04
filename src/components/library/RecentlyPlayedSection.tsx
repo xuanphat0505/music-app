@@ -3,7 +3,7 @@ import { StyleSheet, Text, View, TouchableOpacity } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { COLORS } from "@/constants/Colors";
 import { SongContainer } from "../common";
-import { type Track } from "@/store/playerStore";
+import { Track } from "@/types";
 
 interface RecentlyPlayedSectionProps {
   recentlyPlayed: Track[];

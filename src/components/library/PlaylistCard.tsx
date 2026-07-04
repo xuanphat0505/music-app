@@ -2,13 +2,7 @@ import React from "react";
 import { StyleSheet, Text, View, Image, TouchableOpacity } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { COLORS } from "@/constants/Colors";
-
-export interface Playlist {
-  id: string;
-  title: string;
-  description: string;
-  coverUrls: string[];
-}
+import { Playlist } from "@/types";
 
 interface PlaylistCardProps {
   playlist: Playlist;

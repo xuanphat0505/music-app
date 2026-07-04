@@ -3,15 +3,7 @@ import { StyleSheet, Text, View, TouchableOpacity } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { COLORS } from "@/constants/Colors";
 import { GlassView } from "@/components/common";
-
-export interface SettingItem {
-  id: string;
-  icon: string;
-  label: string;
-  value?: string;
-  onPress: () => void;
-  isDestructive?: boolean;
-}
+import { SettingItem } from "@/types";
 
 interface SettingsGroupProps {
   title: string;

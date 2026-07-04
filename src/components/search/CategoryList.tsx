@@ -7,13 +7,13 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { CategoryProps } from "@/app/(tabs)/search";
 import { COLORS } from "@/constants/Colors";
 import React from "react";
+import { Category } from "@/types";
 
 interface CategoryListProps {
-  categories: CategoryProps[];
-  onSelectCategory: (category: CategoryProps) => void;
+  categories: Category[];
+  onSelectCategory: (category: Category) => void;
 }
 
 

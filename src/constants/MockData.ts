@@ -1,4 +1,4 @@
-import { Track } from "@/store/playerStore";
+import { Track } from "@/types";
 
 export const MOCK_ALL_TRACKS: (Track & { genre: string; plays: string })[] = [
   {

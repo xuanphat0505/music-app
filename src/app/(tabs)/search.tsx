@@ -14,16 +14,10 @@ import {
   VoiceSearchOverlay,
 } from "@/components/search";
 import { MOCK_ALL_TRACKS } from "@/constants/MockData";
-
-export interface CategoryProps {
-  id: string;
-  title: string;
-  colors: [string, string];
-  coverUrl: string;
-}
+import { Category } from "@/types";
 
 // Danh sách thể loại nhạc giả lập với màu gradient và hình ảnh
-const CATEGORIES: CategoryProps[] = [
+const CATEGORIES: Category[] = [
   {
     id: "c1",
     title: "Pop",
@@ -71,7 +65,7 @@ const CATEGORIES: CategoryProps[] = [
 // Màn hình Tìm kiếm hỗ trợ người dùng lọc tìm các bài hát, ca sĩ, album và khám phá danh mục nhạc
 export default function SearchScreen() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<CategoryProps | null>(
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(
     null
   );
   const [isVoiceActive, setIsVoiceActive] = useState(false);

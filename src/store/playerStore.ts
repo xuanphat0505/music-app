@@ -1,13 +1,5 @@
 import { create } from 'zustand';
-
-export interface Track {
-  id: string;
-  title: string;
-  artist: string;
-  coverUrl: string;
-  audioUrl: string;
-  duration: number;
-}
+import { Track } from '@/types';
 
 interface PlayerState {
   currentTrack: Track | null;

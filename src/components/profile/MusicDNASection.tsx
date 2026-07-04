@@ -1,12 +1,7 @@
 import React from "react";
 import { StyleSheet, Text, View, Image, ScrollView } from "react-native";
 import { COLORS } from "@/constants/Colors";
-
-interface Artist {
-  id: string;
-  name: string;
-  avatarUrl: string;
-}
+import { Artist } from "@/types";
 
 interface MusicDNASectionProps {
   topGenres: string[];

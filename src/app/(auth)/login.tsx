@@ -8,7 +8,6 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
-  Alert,
   StatusBar,
   ScrollView,
 } from "react-native";
@@ -16,9 +15,9 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons, Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
-
 import { COLORS } from "@/constants/Colors";
 import { useAuthStore } from "@/store/authStore";
+import { showError, showInfo } from "@/utils/toast";
 
 // Màn hình Đăng nhập mang phong cách kính mờ cao cấp với màu sắc nhấn neon
 export default function LoginScreen() {
@@ -39,10 +38,7 @@ export default function LoginScreen() {
   const handleLogin = async () => {
     triggerHaptic();
     if (!email.trim() || !password.trim()) {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(
-        () => {},
-      );
-      Alert.alert("Lỗi", "Vui lòng nhập đầy đủ Email và Mật khẩu.");
+      showError("Lỗi đăng nhập", "Vui lòng nhập đầy đủ Email và Mật khẩu.");
       return;
     }
 
@@ -55,23 +51,14 @@ export default function LoginScreen() {
         router.replace("/(tabs)");
       }
     } catch (error) {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch(
-        () => {},
-      );
-      Alert.alert(
-        "Lỗi",
-        "Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.",
-      );
+      showError("Đăng nhập thất bại", "Vui lòng kiểm tra lại thông tin tài khoản.");
     }
   };
 
   // Hàm xử lý đăng nhập giả lập thông qua mạng xã hội
   const handleSocialLogin = (platform: string) => {
     triggerHaptic();
-    Alert.alert(
-      "Đăng nhập MXH",
-      `Chức năng đăng nhập bằng ${platform} đang được xử lý.`,
-    );
+    showInfo("Tính năng liên kết", `Chức năng đăng nhập bằng ${platform} đang được xử lý.`);
   };
 
   return (

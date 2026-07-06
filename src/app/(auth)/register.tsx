@@ -8,7 +8,6 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
-  Alert,
   StatusBar,
   ScrollView,
 } from "react-native";
@@ -16,9 +15,9 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons, Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
-
 import { COLORS } from "@/constants/Colors";
 import { useAuthStore } from "@/store/authStore";
+import { showError, showInfo } from "@/utils/toast";
 
 // Màn hình Đăng ký tài khoản mới phong cách tối giản phẳng đồng bộ với màn hình đăng nhập
 export default function RegisterScreen() {
@@ -47,18 +46,12 @@ export default function RegisterScreen() {
       !password.trim() ||
       !confirmPassword.trim()
     ) {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(
-        () => {},
-      );
-      Alert.alert("Lỗi", "Vui lòng nhập đầy đủ tất cả các thông tin.");
+      showError("Lỗi đăng ký", "Vui lòng nhập đầy đủ tất cả các thông tin.");
       return;
     }
 
     if (password !== confirmPassword) {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(
-        () => {},
-      );
-      Alert.alert("Lỗi", "Mật khẩu xác nhận không trùng khớp.");
+      showError("Lỗi đăng ký", "Mật khẩu xác nhận không trùng khớp.");
       return;
     }
 
@@ -71,20 +64,14 @@ export default function RegisterScreen() {
         router.replace("/(tabs)");
       }
     } catch (error) {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch(
-        () => {},
-      );
-      Alert.alert("Lỗi", "Đăng ký thất bại. Vui lòng kiểm tra lại thông tin.");
+      showError("Đăng ký thất bại", "Vui lòng kiểm tra lại thông tin đăng ký.");
     }
   };
 
   // Hàm xử lý đăng ký tài khoản giả lập qua mạng xã hội
   const handleSocialRegister = (platform: string) => {
     triggerHaptic();
-    Alert.alert(
-      "Đăng ký MXH",
-      `Chức năng liên kết tài khoản bằng ${platform} đang được xử lý.`,
-    );
+    showInfo("Tính năng liên kết", `Chức năng liên kết tài khoản bằng ${platform} đang được xử lý.`);
   };
 
   return (

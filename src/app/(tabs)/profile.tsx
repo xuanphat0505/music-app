@@ -10,6 +10,7 @@ import {
   SettingsGroup,
 } from "@/components/profile";
 import { SettingItem } from "@/types";
+import { useAuthStore } from "@/store/authStore";
 
 const MOCK_TOP_ARTISTS = [
   {
@@ -36,6 +37,7 @@ const MOCK_TOP_ARTISTS = [
 
 // Màn hình thông tin cá nhân hiển thị chi tiết hồ sơ người dùng và các thiết lập nâng cao
 export default function ProfileScreen() {
+  const { user, logout } = useAuthStore();
   const [audioQuality, setAudioQuality] = useState("Lossless");
   const [cacheSize, setCacheSize] = useState("240 MB");
 
@@ -158,7 +160,7 @@ export default function ProfileScreen() {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
         Alert.alert("Logout", "Bạn có chắc chắn muốn đăng xuất tài khoản?", [
           { text: "Hủy", style: "cancel" },
-          { text: "Đăng xuất", style: "destructive", onPress: () => Alert.alert("Hệ thống", "Đang xử lý đăng xuất...") },
+          { text: "Đăng xuất", style: "destructive", onPress: () => logout() },
         ]);
       },
     },
@@ -176,9 +178,9 @@ export default function ProfileScreen() {
       >
         {/* Phần đầu trang hồ sơ */}
         <ProfileHeader
-          name="Alex"
-          email="alex@musichub.com"
-          avatarUrl="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=150&auto=format&fit=crop"
+          name={user?.name || "Alex"}
+          email={user?.email || "alex@musichub.com"}
+          avatarUrl={user?.avatarUrl || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=150&auto=format&fit=crop"}
           playlistsCount={12}
           followingCount={84}
           minutesListened="1,240"

@@ -51,8 +51,8 @@ export default function LoginScreen() {
       }
     } catch (error: any) {
       const errorMessage = Array.isArray(error?.message)
-        ? error.message.join('\n')
-        : (error?.message || "Vui lòng kiểm tra lại thông tin tài khoản.");
+        ? error.message.join("\n")
+        : error?.message || "Vui lòng kiểm tra lại thông tin tài khoản.";
       showError("Đăng nhập thất bại", errorMessage);
     }
   };
@@ -60,7 +60,10 @@ export default function LoginScreen() {
   // Hàm xử lý đăng nhập giả lập thông qua mạng xã hội
   const handleSocialLogin = (platform: string) => {
     triggerHaptic();
-    showInfo("Tính năng liên kết", `Chức năng đăng nhập bằng ${platform} đang được xử lý.`);
+    showInfo(
+      "Tính năng liên kết",
+      `Chức năng đăng nhập bằng ${platform} đang được xử lý.`,
+    );
   };
 
   return (
@@ -141,7 +144,7 @@ export default function LoginScreen() {
                   autoCorrect={false}
                 />
                 <TouchableOpacity
-                  onPress={() => setShowPassword(!showPassword)}
+                  onPress={() => setShowPassword((prev) => !prev)}
                   style={styles.eyeButton}
                 >
                   <Feather

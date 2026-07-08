@@ -209,7 +209,7 @@ export default function RegisterScreen() {
                   autoCorrect={false}
                 />
                 <TouchableOpacity
-                  onPress={() => setShowPassword(!showPassword)}
+                  onPress={() => setShowPassword((prev) => !prev)}
                   style={styles.eyeButton}
                 >
                   <Feather

@@ -1,7 +1,10 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from "@react-navigation/native";
-import { Slot, router, useSegments, useRootNavigationState } from "expo-router";
+import {
+  DarkTheme,
+  DefaultTheme,
+  ThemeProvider,
+} from "@react-navigation/native";
+import { Slot } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import React, { useEffect } from "react";
 import "react-native-reanimated";
 import Toast from "react-native-toast-message";
 
@@ -14,7 +17,6 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-      {/* <NavigationGuard /> */}
       <Slot />
       <StatusBar style="auto" />
       <Toast config={toastConfig} />

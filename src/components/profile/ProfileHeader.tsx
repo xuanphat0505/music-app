@@ -4,7 +4,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { COLORS } from "@/constants/Colors";
 
 interface ProfileHeaderProps {
-  name: string;
+  username: string;
   email: string;
   avatarUrl: string;
   playlistsCount: number;
@@ -14,7 +14,7 @@ interface ProfileHeaderProps {
 
 // Component hiển thị thông tin đầu trang cá nhân gồm ảnh đại diện, tên tuổi, email và các chỉ số thống kê
 export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
-  name,
+  username,
   email,
   avatarUrl,
   playlistsCount,
@@ -32,7 +32,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
         <Image source={{ uri: avatarUrl }} style={styles.avatar} />
       </LinearGradient>
 
-      <Text style={styles.name}>{name}</Text>
+      <Text style={styles.name}>{username}</Text>
       <Text style={styles.email}>{email}</Text>
 
       <LinearGradient

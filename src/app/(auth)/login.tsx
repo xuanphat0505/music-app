@@ -16,13 +16,12 @@ import { Ionicons, Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
 import { COLORS } from "@/constants/Colors";
-import { useAuthStore } from "@/store/authStore";
+import { useAuth } from "@/hooks/useAuth";
 import { showError, showInfo } from "@/utils/toast";
 
 // Màn hình Đăng nhập mang phong cách kính mờ cao cấp với màu sắc nhấn neon
 export default function LoginScreen() {
-  const login = useAuthStore((state) => state.login);
-  const isLoading = useAuthStore((state) => state.isLoading);
+  const { login, isLoading } = useAuth();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -50,8 +49,11 @@ export default function LoginScreen() {
         ).catch(() => {});
         router.replace("/(tabs)");
       }
-    } catch (error) {
-      showError("Đăng nhập thất bại", "Vui lòng kiểm tra lại thông tin tài khoản.");
+    } catch (error: any) {
+      const errorMessage = Array.isArray(error?.message)
+        ? error.message.join('\n')
+        : (error?.message || "Vui lòng kiểm tra lại thông tin tài khoản.");
+      showError("Đăng nhập thất bại", errorMessage);
     }
   };
 

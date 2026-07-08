@@ -1,9 +1,12 @@
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { COLORS } from "@/constants/Colors";
+import { useAuth } from "@/hooks/useAuth";
 
 // Thành phần chào mừng hiển thị lời chào động thay đổi theo giờ thực tế của người dùng
 export const WelcomeSection: React.FC = () => {
+  const { user } = useAuth();
+
   const hour = new Date().getHours();
   let greeting = "Good Evening";
   let subGreeting = "Ready for your nightly session?";
@@ -20,7 +23,7 @@ export const WelcomeSection: React.FC = () => {
   return (
     <View style={styles.welcomeSection}>
       <Text style={styles.greeting}>
-        {greeting}, <Text style={styles.userName}>Alex</Text>
+        {greeting}, <Text style={styles.userName}>{user?.username}</Text>
       </Text>
       <Text style={styles.subGreeting}>{subGreeting}</Text>
     </View>

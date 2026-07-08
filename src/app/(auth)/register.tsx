@@ -16,20 +16,17 @@ import { Ionicons, Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
 import { COLORS } from "@/constants/Colors";
-import { useAuthStore } from "@/store/authStore";
-import { showError, showInfo } from "@/utils/toast";
+import { useAuth } from "@/hooks/useAuth";
+import { showError, showInfo, showSuccess } from "@/utils/toast";
 
 // Màn hình Đăng ký tài khoản mới phong cách tối giản phẳng đồng bộ với màn hình đăng nhập
 export default function RegisterScreen() {
-  const register = useAuthStore((state) => state.register);
-  const isLoading = useAuthStore((state) => state.isLoading);
+  const { register, isLoading } = useAuth();
 
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
 
   // Tạo phản hồi rung xúc giác khi tương tác nút bấm
@@ -37,41 +34,65 @@ export default function RegisterScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
   };
 
+  // Danh sách các quy tắc kiểm tra điều kiện mật khẩu
+  const passwordRules = [
+    {
+      label: "Mật khẩu phải chứa ít nhất 8 ký tự",
+      valid: password.length >= 8,
+    },
+    {
+      label: "Chứa ít nhất một chữ số (0-9)",
+      valid: /\d/.test(password),
+    },
+    {
+      label: "Chứa ít nhất một ký tự đặc biệt",
+      valid: /[!@#$%^&*(),.?":{}|<>]/.test(password),
+    },
+  ];
+
   // Hàm xử lý kiểm tra biểu mẫu và thực hiện đăng ký tài khoản mới
   const handleRegister = async () => {
     triggerHaptic();
-    if (
-      !username.trim() ||
-      !email.trim() ||
-      !password.trim() ||
-      !confirmPassword.trim()
-    ) {
+    if (!username.trim() || !email.trim() || !password.trim()) {
       showError("Lỗi đăng ký", "Vui lòng nhập đầy đủ tất cả các thông tin.");
       return;
     }
 
-    if (password !== confirmPassword) {
-      showError("Lỗi đăng ký", "Mật khẩu xác nhận không trùng khớp.");
+    const isLengthValid = password.length >= 8;
+    const hasNumber = /\d/.test(password);
+    const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+
+    if (!isLengthValid || !hasNumber || !hasSpecial) {
+      showError(
+        "Lỗi đăng ký",
+        "Mật khẩu không đáp ứng đầy đủ yêu cầu bảo mật.",
+      );
       return;
     }
 
     try {
       const success = await register(email, username, password);
+      
       if (success) {
         Haptics.notificationAsync(
           Haptics.NotificationFeedbackType.Success,
         ).catch(() => {});
-        router.replace("/(tabs)");
+        showSuccess("Đăng ký thành công", "Vui lòng đăng nhập với tài khoản mới.");
+        router.replace("/(auth)/login");
       }
-    } catch (error) {
-      showError("Đăng ký thất bại", "Vui lòng kiểm tra lại thông tin đăng ký.");
+    } catch (error: any) {
+      console.log("error: ", error);
+      showError("Đăng ký thất bại", error?.message);
     }
   };
 
   // Hàm xử lý đăng ký tài khoản giả lập qua mạng xã hội
   const handleSocialRegister = (platform: string) => {
     triggerHaptic();
-    showInfo("Tính năng liên kết", `Chức năng liên kết tài khoản bằng ${platform} đang được xử lý.`);
+    showInfo(
+      "Tính năng liên kết",
+      `Chức năng liên kết tài khoản bằng ${platform} đang được xử lý.`,
+    );
   };
 
   return (
@@ -93,6 +114,37 @@ export default function RegisterScreen() {
             </View>
 
             <View style={styles.formSection}>
+              {/* Trường nhập Email */}
+              <View
+                style={[
+                  styles.inputWrapper,
+                  focusedField === "email" && styles.inputWrapperFocused,
+                ]}
+              >
+                <Feather
+                  name="mail"
+                  size={18}
+                  color={
+                    focusedField === "email"
+                      ? COLORS.PRIMARY
+                      : COLORS.TEXT_SECONDARY
+                  }
+                  style={styles.inputIcon}
+                />
+                <TextInput
+                  style={styles.input}
+                  placeholder="Email Address"
+                  placeholderTextColor="rgba(255, 255, 255, 0.3)"
+                  value={email}
+                  onChangeText={setEmail}
+                  onFocus={() => setFocusedField("email")}
+                  onBlur={() => setFocusedField(null)}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                />
+              </View>
+
               {/* Trường nhập Username */}
               <View
                 style={[
@@ -123,37 +175,6 @@ export default function RegisterScreen() {
                     setFocusedField(null);
                   }}
                   autoCapitalize="words"
-                  autoCorrect={false}
-                />
-              </View>
-
-              {/* Trường nhập Email */}
-              <View
-                style={[
-                  styles.inputWrapper,
-                  focusedField === "email" && styles.inputWrapperFocused,
-                ]}
-              >
-                <Feather
-                  name="mail"
-                  size={18}
-                  color={
-                    focusedField === "email"
-                      ? COLORS.PRIMARY
-                      : COLORS.TEXT_SECONDARY
-                  }
-                  style={styles.inputIcon}
-                />
-                <TextInput
-                  style={styles.input}
-                  placeholder="Email Address"
-                  placeholderTextColor="rgba(255, 255, 255, 0.3)"
-                  value={email}
-                  onChangeText={setEmail}
-                  onFocus={() => setFocusedField("email")}
-                  onBlur={() => setFocusedField(null)}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
                   autoCorrect={false}
                 />
               </View>
@@ -198,47 +219,33 @@ export default function RegisterScreen() {
                   />
                 </TouchableOpacity>
               </View>
-
-              {/* Trường xác nhận Mật khẩu */}
-              <View
-                style={[
-                  styles.inputWrapper,
-                  focusedField === "confirmPassword" &&
-                    styles.inputWrapperFocused,
-                ]}
-              >
-                <Feather
-                  name="lock"
-                  size={18}
-                  color={
-                    focusedField === "confirmPassword"
-                      ? COLORS.PRIMARY
-                      : COLORS.TEXT_SECONDARY
-                  }
-                  style={styles.inputIcon}
-                />
-                <TextInput
-                  style={styles.input}
-                  placeholder="Confirm Password"
-                  placeholderTextColor="rgba(255, 255, 255, 0.3)"
-                  value={confirmPassword}
-                  onChangeText={setConfirmPassword}
-                  onFocus={() => setFocusedField("confirmPassword")}
-                  onBlur={() => setFocusedField(null)}
-                  secureTextEntry={!showConfirmPassword}
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                />
-                <TouchableOpacity
-                  onPress={() => setShowConfirmPassword(!showConfirmPassword)}
-                  style={styles.eyeButton}
-                >
-                  <Feather
-                    name={showConfirmPassword ? "eye-off" : "eye"}
-                    size={18}
-                    color={COLORS.TEXT_SECONDARY}
-                  />
-                </TouchableOpacity>
+                  
+              {/* Yêu cầu kiểm tra Mật khẩu */}
+              <View style={styles.requirementsContainer}>
+                {passwordRules.map((rule, idx) => (
+                  <View key={idx} style={styles.requirementRow}>
+                    <Feather
+                      name={rule.valid ? "check-circle" : "x-circle"}
+                      size={13}
+                      color={
+                        rule.valid ? "#10b981" : "rgba(255, 255, 255, 0.2)"
+                      }
+                      style={styles.requirementIcon}
+                    />
+                    <Text
+                      style={[
+                        styles.requirementText,
+                        {
+                          color: rule.valid
+                            ? "#34d399"
+                            : "rgba(255, 255, 255, 0.4)",
+                        },
+                      ]}
+                    >
+                      {rule.label}
+                    </Text>
+                  </View>
+                ))}
               </View>
 
               {/* Nút Đăng ký màu phẳng */}
@@ -455,5 +462,21 @@ const styles = StyleSheet.create({
     borderColor: "rgba(255, 255, 255, 0.06)",
     justifyContent: "center",
     alignItems: "center",
+  },
+  requirementsContainer: {
+    paddingHorizontal: 4,
+    paddingVertical: 6,
+    gap: 6,
+  },
+  requirementRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  requirementIcon: {
+    marginRight: 8,
+  },
+  requirementText: {
+    fontSize: 12,
+    fontFamily: "Inter",
   },
 });

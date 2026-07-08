@@ -10,34 +10,38 @@ import {
   SettingsGroup,
 } from "@/components/profile";
 import { SettingItem } from "@/types";
-import { useAuthStore } from "@/store/authStore";
+import { useAuth } from "@/hooks/useAuth";
 
 const MOCK_TOP_ARTISTS = [
   {
     id: "a1",
     name: "LUN",
-    avatarUrl: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=150&auto=format&fit=crop",
+    avatarUrl:
+      "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=150&auto=format&fit=crop",
   },
   {
     id: "a2",
     name: "Pulse Engine",
-    avatarUrl: "https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?q=80&w=150&auto=format&fit=crop",
+    avatarUrl:
+      "https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?q=80&w=150&auto=format&fit=crop",
   },
   {
     id: "a3",
     name: "Azure Dreams",
-    avatarUrl: "https://images.unsplash.com/photo-1498038432885-c6f3f1b912ee?q=80&w=150&auto=format&fit=crop",
+    avatarUrl:
+      "https://images.unsplash.com/photo-1498038432885-c6f3f1b912ee?q=80&w=150&auto=format&fit=crop",
   },
   {
     id: "a4",
     name: "Orion",
-    avatarUrl: "https://images.unsplash.com/photo-1478760329108-5c3ed9d495a0?q=80&w=150&auto=format&fit=crop",
+    avatarUrl:
+      "https://images.unsplash.com/photo-1478760329108-5c3ed9d495a0?q=80&w=150&auto=format&fit=crop",
   },
 ];
 
 // Màn hình thông tin cá nhân hiển thị chi tiết hồ sơ người dùng và các thiết lập nâng cao
 export default function ProfileScreen() {
-  const { user, logout } = useAuthStore();
+  const { user, logout } = useAuth();
   const [audioQuality, setAudioQuality] = useState("Lossless");
   const [cacheSize, setCacheSize] = useState("240 MB");
 
@@ -54,7 +58,10 @@ export default function ProfileScreen() {
       label: "Edit Profile",
       onPress: () => {
         triggerHaptic();
-        Alert.alert("Profile", "Chức năng chỉnh sửa hồ sơ đang được phát triển.");
+        Alert.alert(
+          "Profile",
+          "Chức năng chỉnh sửa hồ sơ đang được phát triển.",
+        );
       },
     },
     {
@@ -64,7 +71,10 @@ export default function ProfileScreen() {
       value: "Premium VIP",
       onPress: () => {
         triggerHaptic();
-        Alert.alert("Subscription", "Bạn đang sử dụng gói Premium VIP trọn đời.");
+        Alert.alert(
+          "Subscription",
+          "Bạn đang sử dụng gói Premium VIP trọn đời.",
+        );
       },
     },
   ];
@@ -84,9 +94,12 @@ export default function ProfileScreen() {
           [
             { text: "Normal", onPress: () => setAudioQuality("Normal") },
             { text: "High", onPress: () => setAudioQuality("High") },
-            { text: "Lossless (Hi-Fi)", onPress: () => setAudioQuality("Lossless") },
+            {
+              text: "Lossless (Hi-Fi)",
+              onPress: () => setAudioQuality("Lossless"),
+            },
           ],
-          { cancelable: true }
+          { cancelable: true },
         );
       },
     },
@@ -119,7 +132,7 @@ export default function ProfileScreen() {
                 Alert.alert("Thành công", "Đã dọn dẹp bộ nhớ cache.");
               },
             },
-          ]
+          ],
         );
       },
     },
@@ -144,7 +157,10 @@ export default function ProfileScreen() {
       value: "On",
       onPress: () => {
         triggerHaptic();
-        Alert.alert("Notifications", "Chuyển tiếp đến cài đặt thông báo hệ thống.");
+        Alert.alert(
+          "Notifications",
+          "Chuyển tiếp đến cài đặt thông báo hệ thống.",
+        );
       },
     },
   ];
@@ -157,7 +173,9 @@ export default function ProfileScreen() {
       label: "Logout",
       isDestructive: true,
       onPress: () => {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
+        Haptics.notificationAsync(
+          Haptics.NotificationFeedbackType.Warning,
+        ).catch(() => {});
         Alert.alert("Logout", "Bạn có chắc chắn muốn đăng xuất tài khoản?", [
           { text: "Hủy", style: "cancel" },
           { text: "Đăng xuất", style: "destructive", onPress: () => logout() },
@@ -178,9 +196,12 @@ export default function ProfileScreen() {
       >
         {/* Phần đầu trang hồ sơ */}
         <ProfileHeader
-          name={user?.name || "Alex"}
-          email={user?.email || "alex@musichub.com"}
-          avatarUrl={user?.avatarUrl || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=150&auto=format&fit=crop"}
+          username={user?.username || ""}
+          email={user?.email || ""}
+          avatarUrl={
+            user?.avatar ||
+            "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=150&auto=format&fit=crop"
+          }
           playlistsCount={12}
           followingCount={84}
           minutesListened="1,240"

@@ -1,54 +1,120 @@
 import { create } from "zustand";
+import { authApi } from "@/apis/authApi";
+import { registerAuthFailureCallback, loadTokensFromStorage, clearTokens } from "@/services/tokenService";
 
 interface User {
-  name: string;
+  id: string;
+  username: string;
   email: string;
-  avatarUrl: string;
+  avatar: string;
+  role: string;
+  settings?: any;
 }
 
 interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
+  isInitialized: boolean;
   user: User | null;
   login: (email: string, password?: string) => Promise<boolean>;
   register: (email: string, username: string, password?: string) => Promise<boolean>;
-  logout: () => void;
+  logout: () => Promise<void>;
+  initialize: () => Promise<void>;
+  setUser: (user: User | null) => void;
+  setAuthenticated: (isAuthenticated: boolean) => void;
 }
 
-// Store quản lý trạng thái xác thực người dùng bao gồm đăng nhập, đăng xuất và thông tin tài khoản
+// Zustand store quản lý trạng thái xác thực của người dùng
 export const useAuthStore = create<AuthState>((set) => ({
   isAuthenticated: false,
   isLoading: false,
+  isInitialized: false,
   user: null,
+
   login: async (email, password) => {
     set({ isLoading: true });
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    set({
-      isAuthenticated: true,
-      isLoading: false,
-      user: {
-        name: "Alex",
-        email: email,
-        avatarUrl: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=150&auto=format&fit=crop",
-      },
-    });
-    return true;
+    try {
+      const response: any = await authApi.login(email, password);
+      const { user } = response.data;
+      set({
+        isAuthenticated: true,
+        isLoading: false,
+        user: {
+          id: user._id,
+          username: user.username,
+          email: user.email,
+          avatar: user.avatar,
+          role: user.role,
+          settings: user.settings,
+        },
+      });
+      return true;
+    } catch (error) {
+      set({ isLoading: false });
+      throw error;
+    }
   },
+
   register: async (email, username, password) => {
     set({ isLoading: true });
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    set({
-      isAuthenticated: true,
-      isLoading: false,
-      user: {
-        name: username,
-        email: email,
-        avatarUrl: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=150&auto=format&fit=crop",
-      },
-    });
-    return true;
+    try {
+      await authApi.register(email, username, password);
+      set({ isLoading: false });
+      return true;
+    } catch (error) {
+      set({ isLoading: false });
+      throw error;
+    }
   },
-  logout: () => {
-    set({ isAuthenticated: false, user: null });
+
+  logout: async () => {
+    try {
+      await authApi.logout();
+    } catch (error) {
+      // bỏ qua lỗi nếu gọi logout api lên server không thành công
+    } finally {
+      set({
+        isAuthenticated: false,
+        user: null,
+      });
+    }
   },
+
+  initialize: async () => {
+    try {
+      const hasTokens = await loadTokensFromStorage();
+      if (hasTokens) {
+        // gọi api profile để khôi phục phiên nếu token hợp lệ
+        const response: any = await authApi.getProfile();
+        const user = response.data;
+        set({
+          user: {
+            id: user.id || user._id,
+            username: user.username || user.name,
+            email: user.email,
+            avatar: user.avatar,
+            role: user.role,
+            settings: user.settings,
+          },
+          isAuthenticated: true,
+        });
+      }
+    } catch (error) {
+      // xóa sạch token nếu token lưu trữ bị sai hoặc hết hạn không làm mới được
+      clearTokens();
+    } finally {
+      set({ isInitialized: true });
+    }
+  },
+
+  setUser: (user) => set({ user }),
+  setAuthenticated: (isAuthenticated) => set({ isAuthenticated }),
 }));
+
+// Đăng ký callback khi xảy ra sự cố lỗi xác thực
+registerAuthFailureCallback(() => {
+  useAuthStore.setState({
+    isAuthenticated: false,
+    user: null,
+  });
+});

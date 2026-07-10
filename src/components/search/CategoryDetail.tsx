@@ -6,6 +6,7 @@ import {
   Image,
   TouchableOpacity,
   ScrollView,
+  Alert,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -13,7 +14,7 @@ import * as Haptics from "expo-haptics";
 import { COLORS } from "@/constants/Colors";
 import { MOCK_ALL_TRACKS } from "@/constants/MockData";
 import { usePlayerStore } from "@/store/playerStore";
-import { SongContainer } from "@/components/common";
+import { SongItem } from "@/components/common";
 import { Category, Track } from "@/types";
 
 interface CategoryDetailProps {
@@ -30,7 +31,7 @@ export const CategoryDetail: React.FC<CategoryDetailProps> = ({
 
   // Lọc danh sách bài hát thuộc thể loại nhạc này từ danh sách giả lập
   const filteredSongs = MOCK_ALL_TRACKS.filter(
-    (song) => song.genre.toLowerCase() === category.title.toLowerCase()
+    (song) => song.genre.toLowerCase() === category.title.toLowerCase(),
   );
 
   // Hàm xử lý phát nhạc và phản hồi rung khi chạm chọn bài hát trong danh mục
@@ -64,10 +65,7 @@ export const CategoryDetail: React.FC<CategoryDetailProps> = ({
         <Text style={styles.bannerSubtitle}>
           Discover the top tracks in the {category.title} category.
         </Text>
-        <Image
-          source={{ uri: category.coverUrl }}
-          style={styles.bannerImage}
-        />
+        <Image source={{ uri: category.coverUrl }} style={styles.bannerImage} />
       </LinearGradient>
 
       {/* Danh sách bài hát */}
@@ -79,23 +77,21 @@ export const CategoryDetail: React.FC<CategoryDetailProps> = ({
         {filteredSongs.length > 0 ? (
           filteredSongs.map((song) => {
             return (
-              <SongContainer
+              <SongItem
                 key={song.id}
                 song={song}
-                subtitle={`${song.artist} • ${song.plays} plays`}
-                onPress={() => handlePlaySong(song)}
-                rightElement={
-                  <TouchableOpacity
-                    style={styles.moreButton}
-                    activeOpacity={0.7}
-                  >
-                    <Feather
-                      name="more-vertical"
-                      size={18}
-                      color={COLORS.TEXT_SECONDARY}
-                    />
-                  </TouchableOpacity>
+                subtitle={
+                  song.plays ? `${song.artist} • ${song.plays} plays` : song.artist
                 }
+                duration={song.duration}
+                onPress={() => handlePlaySong(song)}
+                onAddPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+                  Alert.alert(
+                    "Add to Playlist",
+                    `Thêm "${song.title}" vào danh sách phát. Chức năng đang được phát triển.`,
+                  );
+                }}
               />
             );
           })

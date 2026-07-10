@@ -1,48 +1,33 @@
-import React, { useState } from "react";
-import { StyleSheet, TouchableOpacity } from "react-native";
-import { Feather } from "@expo/vector-icons";
-import { COLORS } from "@/constants/Colors";
-import { SongContainer } from "../common";
+import React from "react";
+import { StyleSheet, Alert } from "react-native";
+import { SongItem } from "../common";
 import { usePlayerStore } from "@/store/playerStore";
 import { Track } from "@/types";
+import * as Haptics from "expo-haptics";
 
 interface TrendingSongProps {
   song: Track;
   plays: string;
 }
 
-// Dòng hiển thị bài hát xu hướng hỗ trợ tương tác yêu thích và phát nhạc nhanh
+// Dòng hiển thị bài hát xu hướng hỗ trợ tương tác và phát nhạc nhanh
 export const TrendingSong: React.FC<TrendingSongProps> = ({ song, plays }) => {
   const playTrack = usePlayerStore((state) => state.playTrack);
-  const [isLiked, setIsLiked] = useState(false);
-
-  // Tạo phần nút hành động yêu thích và thêm tùy chọn ở góc phải của dòng bài hát
-  const rightElement = (
-    <>
-      <TouchableOpacity
-        onPress={() => setIsLiked(!isLiked)}
-        style={styles.actionButton}
-        activeOpacity={0.8}
-      >
-        <Feather
-          name="heart"
-          size={18}
-          color={isLiked ? COLORS.PRIMARY : COLORS.TEXT_SECONDARY}
-        />
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.actionButton} activeOpacity={0.8}>
-        <Feather name="more-vertical" size={18} color={COLORS.TEXT_SECONDARY} />
-      </TouchableOpacity>
-    </>
-  );
 
   return (
-    <SongContainer
+    <SongItem
       song={song}
       subtitle={`${song.artist} • ${plays} plays`}
-      rightElement={rightElement}
+      duration={song.duration}
       style={styles.rowMargin}
       onPress={() => playTrack(song)}
+      onAddPress={() => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+        Alert.alert(
+          "Add to Playlist",
+          `Thêm "${song.title}" vào danh sách phát. Chức năng đang được phát triển.`,
+        );
+      }}
     />
   );
 };
@@ -51,10 +36,6 @@ const styles = StyleSheet.create({
   rowMargin: {
     marginHorizontal: 20,
   },
-  actionButton: {
-    padding: 8,
-  },
 });
 
 export default TrendingSong;
-

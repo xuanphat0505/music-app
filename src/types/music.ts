@@ -6,6 +6,8 @@ export interface Track {
   coverUrl: string;
   audioUrl: string;
   duration: number;
+  genre?: string;
+  plays?: string;
 }
 
 // Thực thể danh sách phát

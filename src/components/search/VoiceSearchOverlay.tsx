@@ -106,7 +106,7 @@ export const VoiceSearchOverlay: React.FC<VoiceSearchOverlayProps> = ({
                 ]}
               >
                 <LinearGradient
-                  colors={[COLORS.PRIMARY, "#a855f7"]}
+                  colors={[COLORS.PRIMARY, COLORS.SECONDARY]}
                   style={styles.waveBar}
                 />
               </Animated.View>

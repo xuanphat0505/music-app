@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, Image, TouchableOpacity, Dimensions } from 'react-native';
+import { StyleSheet, Text, Image, TouchableOpacity, View } from 'react-native';
 import { COLORS } from '@/constants/Colors';
 import { Album } from '@/types';
 
@@ -8,17 +8,14 @@ interface FeaturedAlbumCardProps {
   onPress?: () => void;
 }
 
-const { width } = Dimensions.get('window');
-const cardWidth = width * 0.65;
-
-
+// Thẻ hiển thị Album/Playlist nổi bật cuộn ngang trong danh sách phát
 export const FeaturedAlbumCard: React.FC<FeaturedAlbumCardProps> = ({ album, onPress }) => {
   return (
-    <TouchableOpacity style={styles.container} activeOpacity={0.9} onPress={onPress}>
+    <TouchableOpacity style={styles.container} activeOpacity={0.8} onPress={onPress}>
       <Image source={{ uri: album.coverUrl }} style={styles.cover} />
       <Text style={styles.title} numberOfLines={1}>{album.title}</Text>
       <Text style={styles.subtitle} numberOfLines={1}>
-        {album.genre} • {album.artist}
+        {album.artist}
       </Text>
     </TouchableOpacity>
   );
@@ -26,18 +23,18 @@ export const FeaturedAlbumCard: React.FC<FeaturedAlbumCardProps> = ({ album, onP
 
 const styles = StyleSheet.create({
   container: {
-    width: cardWidth,
+    width: 140,
     marginRight: 16,
   },
   cover: {
-    width: '100%',
-    height: cardWidth,
-    borderRadius: 16,
+    width: 140,
+    height: 140,
+    borderRadius: 12,
     marginBottom: 8,
     backgroundColor: COLORS.SURFACE,
   },
   title: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '700',
     color: COLORS.TEXT_PRIMARY,
     fontFamily: 'Outfit',
@@ -50,3 +47,4 @@ const styles = StyleSheet.create({
   },
 });
 export default FeaturedAlbumCard;
+

@@ -21,42 +21,42 @@ const CATEGORIES: Category[] = [
   {
     id: "c1",
     title: "Pop",
-    colors: ["#ec4899", "#f43f5e"] as [string, string],
+    colors: ["#ff5a14", "#ff8f59"] as [string, string],
     coverUrl:
       "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=150&auto=format&fit=crop",
   },
   {
     id: "c2",
     title: "Rock",
-    colors: ["#5b21b6", "#3b82f6"] as [string, string],
+    colors: ["#4d44b5", "#6b5ce7"] as [string, string],
     coverUrl:
       "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=150&auto=format&fit=crop",
   },
   {
     id: "c3",
     title: "EDM",
-    colors: ["#06b6d4", "#0891b2"] as [string, string],
+    colors: ["#00e5c9", "#00b39d"] as [string, string],
     coverUrl:
       "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=150&auto=format&fit=crop",
   },
   {
     id: "c4",
     title: "Jazz",
-    colors: ["#f59e0b", "#d97706"] as [string, string],
+    colors: ["#ff5a14", "#4d44b5"] as [string, string],
     coverUrl:
       "https://images.unsplash.com/photo-1511192336575-5a79af67a629?q=80&w=150&auto=format&fit=crop",
   },
   {
     id: "c5",
     title: "Hip Hop",
-    colors: ["#7c3aed", "#6d28d9"] as [string, string],
+    colors: ["#4d44b5", "#00e5c9"] as [string, string],
     coverUrl:
       "https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?q=80&w=150&auto=format&fit=crop",
   },
   {
     id: "c6",
     title: "Indie",
-    colors: ["#10b981", "#059669"] as [string, string],
+    colors: ["#18181c", "#2c2c35"] as [string, string],
     coverUrl:
       "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?q=80&w=150&auto=format&fit=crop",
   },

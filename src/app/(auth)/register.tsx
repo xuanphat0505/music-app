@@ -109,7 +109,9 @@ export default function RegisterScreen() {
             keyboardShouldPersistTaps="handled"
           >
             <View style={styles.logoSection}>
-              <Text style={styles.brandName}>MusicHub</Text>
+              <Text style={styles.brandName}>
+                Music<Text style={{ color: COLORS.PRIMARY }}>Hub</Text>
+              </Text>
               <Text style={styles.brandTagline}>PREMIUM AUDIO EXPERIENCE</Text>
             </View>
 
@@ -228,7 +230,7 @@ export default function RegisterScreen() {
                       name={rule.valid ? "check-circle" : "x-circle"}
                       size={13}
                       color={
-                        rule.valid ? "#10b981" : "rgba(255, 255, 255, 0.2)"
+                        rule.valid ? COLORS.SECONDARY : "rgba(255, 255, 255, 0.2)"
                       }
                       style={styles.requirementIcon}
                     />
@@ -237,7 +239,7 @@ export default function RegisterScreen() {
                         styles.requirementText,
                         {
                           color: rule.valid
-                            ? "#34d399"
+                            ? COLORS.SECONDARY
                             : "rgba(255, 255, 255, 0.4)",
                         },
                       ]}
@@ -345,7 +347,7 @@ const styles = StyleSheet.create({
   brandName: {
     fontSize: 38,
     fontWeight: "900",
-    color: "#b2bdfb",
+    color: "#ffffff",
     fontFamily: "Outfit",
     letterSpacing: 1,
     marginBottom: 6,

@@ -72,9 +72,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
-    backgroundColor: "rgba(168, 85, 247, 0.1)",
+    backgroundColor: "rgba(255, 90, 20, 0.1)",
     borderWidth: 1,
-    borderColor: "rgba(168, 85, 247, 0.2)",
+    borderColor: "rgba(255, 90, 20, 0.25)",
   },
   genreText: {
     fontSize: 12,

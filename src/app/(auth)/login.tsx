@@ -80,7 +80,9 @@ export default function LoginScreen() {
             keyboardShouldPersistTaps="handled"
           >
             <View style={styles.logoSection}>
-              <Text style={styles.brandName}>MusicHub</Text>
+              <Text style={styles.brandName}>
+                Music<Text style={{ color: COLORS.PRIMARY }}>Hub</Text>
+              </Text>
               <Text style={styles.brandTagline}>PREMIUM AUDIO EXPERIENCE</Text>
             </View>
 
@@ -258,7 +260,7 @@ const styles = StyleSheet.create({
   brandName: {
     fontSize: 38,
     fontWeight: "900",
-    color: "#b2bdfb",
+    color: "#ffffff",
     fontFamily: "Outfit",
     letterSpacing: 1,
     marginBottom: 6,

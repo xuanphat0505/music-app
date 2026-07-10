@@ -1,26 +1,15 @@
 import React from "react";
-import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { COLORS } from "@/constants/Colors";
-import { GlassView } from "./GlassView";
 
 // Component Header
 export const Header: React.FC = () => {
   return (
     <View style={styles.container}>
-      <View style={styles.leftSection}>
-        <Image
-          source={{
-            uri: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=100&auto=format&fit=crop",
-          }}
-          style={styles.avatar}
-        />
-        <Text style={styles.title}>MusicHub</Text>
-      </View>
-      <TouchableOpacity activeOpacity={0.8}>
-        <GlassView style={styles.notificationButton}>
-          <Feather name="bell" size={20} color={COLORS.TEXT_PRIMARY} />
-        </GlassView>
+      <Text style={styles.title}>Featured</Text>
+      <TouchableOpacity activeOpacity={0.7}>
+        <Feather name="search" size={24} color={COLORS.TEXT_PRIMARY} />
       </TouchableOpacity>
     </View>
   );
@@ -32,33 +21,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 10,
-  },
-  leftSection: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-  },
-  avatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: COLORS.GLASS_BORDER,
+    paddingTop: 16,
+    paddingBottom: 12,
+    backgroundColor: COLORS.BACKGROUND,
   },
   title: {
-    fontSize: 22,
+    fontSize: 28,
     fontWeight: "700",
     color: COLORS.TEXT_PRIMARY,
     fontFamily: "Outfit",
   },
-  notificationButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: COLORS.GLASS_FILL,
-  },
 });
+

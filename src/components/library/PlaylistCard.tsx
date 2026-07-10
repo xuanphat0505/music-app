@@ -94,7 +94,7 @@ const styles = StyleSheet.create({
   gridContainer: {
     width: 140,
     height: 140,
-    borderRadius: 16,
+    borderRadius: 12,
     overflow: "hidden",
     flexDirection: "row",
     flexWrap: "wrap",
@@ -108,14 +108,14 @@ const styles = StyleSheet.create({
   singleImage: {
     width: 140,
     height: 140,
-    borderRadius: 16,
+    borderRadius: 12,
     marginBottom: 8,
     backgroundColor: COLORS.SURFACE,
   },
   fallbackCover: {
     width: 140,
     height: 140,
-    borderRadius: 16,
+    borderRadius: 12,
     backgroundColor: COLORS.SURFACE,
     alignItems: "center",
     justifyContent: "center",
@@ -126,7 +126,7 @@ const styles = StyleSheet.create({
   addCover: {
     width: 140,
     height: 140,
-    borderRadius: 16,
+    borderRadius: 12,
     backgroundColor: "rgba(255, 255, 255, 0.03)",
     alignItems: "center",
     justifyContent: "center",

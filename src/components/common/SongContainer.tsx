@@ -10,18 +10,9 @@ import {
 } from "react-native";
 import { COLORS } from "@/constants/Colors";
 import { usePlayerStore } from "@/store/playerStore";
-import { GlassView } from "./GlassView";
 import { Track } from "@/types";
 
-interface SongContainerProps {
-  song: Track;
-  subtitle?: string;
-  rightElement?: React.ReactNode;
-  style?: StyleProp<ViewStyle>;
-  onPress?: () => void;
-}
-
-// Component dùng chung hiển thị một dòng thông tin bài hát trong hộp kính mờ
+// Component dùng chung hiển thị một dòng thông tin bài hát
 export const SongContainer: React.FC<SongContainerProps> = ({
   song,
   subtitle,
@@ -33,7 +24,7 @@ export const SongContainer: React.FC<SongContainerProps> = ({
   const isActive = currentTrack?.id === song.id;
 
   return (
-    <GlassView
+    <View
       style={[
         styles.container,
         isActive ? styles.activeContainer : undefined,
@@ -62,9 +53,17 @@ export const SongContainer: React.FC<SongContainerProps> = ({
       {rightElement && (
         <View style={styles.actionContainer}>{rightElement}</View>
       )}
-    </GlassView>
+    </View>
   );
 };
+
+interface SongContainerProps {
+  song: Track;
+  subtitle?: string;
+  rightElement?: React.ReactNode;
+  style?: StyleProp<ViewStyle>;
+  onPress?: () => void;
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -72,11 +71,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     padding: 10,
-    marginBottom: 10,
+    marginBottom: 8,
+    borderRadius: 12,
+    backgroundColor: COLORS.SURFACE,
   },
   activeContainer: {
+    borderWidth: 1,
     borderColor: COLORS.PRIMARY,
-    backgroundColor: "rgba(124, 58, 237, 0.15)",
+    backgroundColor: "rgba(255, 90, 20, 0.1)",
   },
   clickableArea: {
     flex: 1,

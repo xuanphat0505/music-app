@@ -14,7 +14,6 @@ import {
   FeaturedAlbumCard,
   TrendingSong,
   WelcomeSection,
-  RecentPlayGrid,
 } from "@/components/home";
 import { Track } from "@/types";
 
@@ -22,25 +21,25 @@ import { Track } from "@/types";
 const MOCK_ALBUMS = [
   {
     id: "a1",
-    title: "Neon Nights",
-    artist: "various Artists",
-    genre: "Electronic",
+    title: "Reggae and Chill",
+    artist: "Caziq Music",
+    genre: "Reggae",
     coverUrl:
       "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=300&auto=format&fit=crop",
   },
   {
     id: "a2",
-    title: "Cyber Echoes",
-    artist: "LUN",
-    genre: "Synthwave",
+    title: "Slow Motion",
+    artist: "Caziq Music",
+    genre: "Chill",
     coverUrl:
       "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=300&auto=format&fit=crop",
   },
   {
     id: "a3",
-    title: "Digital Odyssey",
-    artist: "RetroFuture",
-    genre: "EDM",
+    title: "Gym Time Again",
+    artist: "Caziq Music",
+    genre: "Workout",
     coverUrl:
       "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=300&auto=format&fit=crop",
   },
@@ -104,15 +103,10 @@ export default function HomeScreen() {
         {/* Phần chào hỏi người dùng */}
         <WelcomeSection />
 
-        {/* Lưới phát nhạc nhanh */}
-        <RecentPlayGrid />
 
-        {/* Phần Album nổi bật */}
+        {/* Phần danh sách phát cho bạn */}
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Featured Albums</Text>
-          <TouchableOpacity activeOpacity={0.7}>
-            <Text style={styles.seeAllButton}>See all</Text>
-          </TouchableOpacity>
+          <Text style={styles.sectionTitle}>Playlists for You</Text>
         </View>
 
         <ScrollView

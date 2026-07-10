@@ -71,9 +71,9 @@ const styles = StyleSheet.create({
     borderWidth: 2,
   },
   glowOuter: {
-    borderColor: "rgba(236, 72, 153, 0.4)",
+    borderColor: "rgba(0, 229, 201, 0.4)",
     transform: [{ scale: 1.12 }],
-    shadowColor: "#ec4899",
+    shadowColor: COLORS.SECONDARY,
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.8,
     shadowRadius: 20,

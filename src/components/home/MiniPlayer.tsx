@@ -5,15 +5,13 @@ import {
   View,
   Image,
   TouchableOpacity,
-  Dimensions,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
-import { LinearGradient } from "expo-linear-gradient";
 import { COLORS } from "@/constants/Colors";
 import { GlassView } from "../common";
 import { usePlayerStore } from "@/store/playerStore";
 
-// phần trình phát nhạc thu nhỏ
+// Thành phần trình phát nhạc thu nhỏ thiết kế theo phong cách Caziq frosted glass
 export const MiniPlayer: React.FC = () => {
   const {
     currentTrack,
@@ -66,38 +64,27 @@ export const MiniPlayer: React.FC = () => {
           </TouchableOpacity>
 
           <View style={styles.controls}>
-            <TouchableOpacity style={styles.iconButton} activeOpacity={0.7}>
+            <TouchableOpacity activeOpacity={0.8} onPress={togglePlay} style={styles.iconButton}>
               <Feather
-                name="skip-forward"
-                size={20}
-                color={COLORS.TEXT_PRIMARY}
+                name={isPlaying ? "pause" : "play"}
+                size={22}
+                color={COLORS.PRIMARY}
               />
             </TouchableOpacity>
 
-            <TouchableOpacity activeOpacity={0.8} onPress={togglePlay}>
-              <LinearGradient
-                colors={[COLORS.PRIMARY, COLORS.SECONDARY]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={styles.playButton}
-              >
-                <Feather
-                  name={isPlaying ? "pause" : "play"}
-                  size={16}
-                  color="#fff"
-                  style={!isPlaying && styles.playIconOffset}
-                />
-              </LinearGradient>
+            <TouchableOpacity style={styles.iconButton} activeOpacity={0.7}>
+              <Feather
+                name="x"
+                size={20}
+                color="rgba(255, 255, 255, 0.3)"
+              />
             </TouchableOpacity>
           </View>
         </View>
 
-        {/* Thanh tiến trình siêu mảnh nằm dưới đáy hộp MiniPlayer */}
+        {/* Thanh tiến trình màu cam san hô ở đáy MiniPlayer */}
         <View style={styles.progressBarBackground}>
-          <LinearGradient
-            colors={[COLORS.PRIMARY, COLORS.SECONDARY]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
+          <View
             style={[
               styles.progressBarFill,
               { width: `${progressPercentage}%` },
@@ -112,16 +99,16 @@ export const MiniPlayer: React.FC = () => {
 const styles = StyleSheet.create({
   outerContainer: {
     position: "absolute",
-    bottom: 68, // Nằm trên thanh Bottom Tab Bar kiểu Spotify
-    left: 10,
-    right: 10,
+    bottom: 60, // Nằm trên thanh Bottom Tab Bar
+    left: 0,
+    right: 0,
     zIndex: 99,
   },
   container: {
-    backgroundColor: "rgba(15, 19, 29, 0.75)",
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.1)",
+    backgroundColor: "rgba(24, 24, 28, 0.75)",
+    borderRadius: 0,
+    borderWidth: 0,
+    overflow: "hidden",
   },
   content: {
     flexDirection: "row",
@@ -140,7 +127,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 8,
-    backgroundColor: COLORS.SURFACE,
+    backgroundColor: COLORS.BACKGROUND,
   },
   infoContainer: {
     flex: 1,
@@ -161,28 +148,21 @@ const styles = StyleSheet.create({
   controls: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 12,
+    gap: 8,
   },
   iconButton: {
     padding: 6,
   },
-  playButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  playIconOffset: {
-    marginLeft: 2, // Đẩy nhẹ icon play sang phải để cân đối hình tròn
-  },
   progressBarBackground: {
-    height: 2,
+    height: 3,
     backgroundColor: "rgba(255, 255, 255, 0.1)",
     width: "100%",
   },
   progressBarFill: {
     height: "100%",
+    backgroundColor: COLORS.PRIMARY,
   },
 });
 export default MiniPlayer;
+
+

@@ -36,7 +36,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
       <Text style={styles.email}>{email}</Text>
 
       <LinearGradient
-        colors={["#ec4899", COLORS.PRIMARY]}
+        colors={[COLORS.PRIMARY, COLORS.TERTIARY]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         style={styles.badgeContainer}

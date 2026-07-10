@@ -11,7 +11,7 @@ interface TrendingSongProps {
   plays: string;
 }
 
-// Dòng hiển thị bài hát xu hướng nằm trong hộp kính mờ hỗ trợ tương tác yêu thích và phát nhạc nhanh
+// Dòng hiển thị bài hát xu hướng hỗ trợ tương tác yêu thích và phát nhạc nhanh
 export const TrendingSong: React.FC<TrendingSongProps> = ({ song, plays }) => {
   const playTrack = usePlayerStore((state) => state.playTrack);
   const [isLiked, setIsLiked] = useState(false);
@@ -25,13 +25,13 @@ export const TrendingSong: React.FC<TrendingSongProps> = ({ song, plays }) => {
         activeOpacity={0.8}
       >
         <Feather
-          name={isLiked ? "heart" : "heart"}
+          name="heart"
           size={18}
-          color={isLiked ? COLORS.SECONDARY : COLORS.TEXT_PRIMARY}
+          color={isLiked ? COLORS.PRIMARY : COLORS.TEXT_SECONDARY}
         />
       </TouchableOpacity>
       <TouchableOpacity style={styles.actionButton} activeOpacity={0.8}>
-        <Feather name="more-vertical" size={18} color={COLORS.TEXT_PRIMARY} />
+        <Feather name="more-vertical" size={18} color={COLORS.TEXT_SECONDARY} />
       </TouchableOpacity>
     </>
   );
@@ -57,3 +57,4 @@ const styles = StyleSheet.create({
 });
 
 export default TrendingSong;
+

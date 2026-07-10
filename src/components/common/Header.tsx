@@ -3,12 +3,17 @@ import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { COLORS } from "@/constants/Colors";
 
-// Component Header
-export const Header: React.FC = () => {
+interface HeaderProps {
+  title?: string;
+  onSearchPress?: () => void;
+}
+
+// Component Header hiển thị tiêu đề đầu trang và nút tìm kiếm nhanh
+export const Header: React.FC<HeaderProps> = ({ title = "Featured", onSearchPress }) => {
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Featured</Text>
-      <TouchableOpacity activeOpacity={0.7}>
+      <Text style={styles.title}>{title}</Text>
+      <TouchableOpacity activeOpacity={0.7} onPress={onSearchPress}>
         <Feather name="search" size={24} color={COLORS.TEXT_PRIMARY} />
       </TouchableOpacity>
     </View>

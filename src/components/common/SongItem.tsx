@@ -8,17 +8,28 @@ import {
   StyleProp,
   ViewStyle,
 } from "react-native";
+import { Feather, Ionicons } from "@expo/vector-icons";
 import { COLORS } from "@/constants/Colors";
 import { usePlayerStore } from "@/store/playerStore";
 import { Track } from "@/types";
 
-// Component dùng chung hiển thị một dòng thông tin bài hát
-export const SongContainer: React.FC<SongContainerProps> = ({
+// Hàm định dạng số giây sang dạng phút:giây (ví dụ: 3:45)
+const formatDuration = (sec: number | string) => {
+  if (typeof sec === "string") return sec;
+  const mins = Math.floor(sec / 60);
+  const secs = Math.floor(sec % 60);
+  return `${mins}:${secs < 10 ? "0" : ""}${secs}`;
+};
+
+// Component dùng chung hiển thị một dòng thông tin bài hát có thời lượng bắt buộc
+export const SongItem: React.FC<SongItemProps> = ({
   song,
   subtitle,
-  rightElement,
   style,
   onPress,
+  duration,
+  onAddPress,
+  isAdded = false,
 }) => {
   const currentTrack = usePlayerStore((state) => state.currentTrack);
   const isActive = currentTrack?.id === song.id;
@@ -50,19 +61,34 @@ export const SongContainer: React.FC<SongContainerProps> = ({
         </View>
       </TouchableOpacity>
 
-      {rightElement && (
-        <View style={styles.actionContainer}>{rightElement}</View>
-      )}
+      <View style={styles.rightSection}>
+        {onAddPress && (
+          <TouchableOpacity
+            style={styles.addButton}
+            onPress={onAddPress}
+            activeOpacity={0.7}
+          >
+            {isAdded ? (
+              <Ionicons name="checkmark-circle" size={20} color="#1db954" />
+            ) : (
+              <Feather name="plus-circle" size={20} color={COLORS.TEXT_SECONDARY} />
+            )}
+          </TouchableOpacity>
+        )}
+        <Text style={styles.durationText}>{formatDuration(duration)}</Text>
+      </View>
     </View>
   );
 };
 
-interface SongContainerProps {
+interface SongItemProps {
   song: Track;
   subtitle?: string;
-  rightElement?: React.ReactNode;
   style?: StyleProp<ViewStyle>;
   onPress?: () => void;
+  duration: string | number;
+  onAddPress?: () => void;
+  isAdded?: boolean;
 }
 
 const styles = StyleSheet.create({
@@ -111,9 +137,19 @@ const styles = StyleSheet.create({
     color: COLORS.TEXT_SECONDARY,
     fontFamily: "Inter",
   },
-  actionContainer: {
+  rightSection: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 4,
+    gap: 14,
+  },
+  addButton: {
+    padding: 6,
+  },
+  durationText: {
+    fontSize: 12,
+    color: COLORS.TEXT_SECONDARY,
+    fontFamily: "Inter",
+    minWidth: 32,
+    textAlign: "right",
   },
 });

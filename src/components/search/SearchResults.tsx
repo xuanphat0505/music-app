@@ -1,9 +1,9 @@
 import React from "react";
-import { StyleSheet, Text, View, TouchableOpacity } from "react-native";
+import { StyleSheet, Text, View, TouchableOpacity, Alert } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { COLORS } from "@/constants/Colors";
 import { usePlayerStore } from "@/store/playerStore";
-import { SongContainer } from "../common";
+import { SongItem } from "../common";
 import * as Haptics from "expo-haptics";
 import { Track } from "@/types";
 
@@ -46,19 +46,18 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
       <Text style={styles.sectionTitle}>Songs</Text>
       {results.map((song) => {
         return (
-          <SongContainer
+          <SongItem
             key={song.id}
             song={song}
             onPress={() => handlePlaySong(song)}
-            rightElement={
-              <TouchableOpacity style={styles.moreButton} activeOpacity={0.7}>
-                <Feather
-                  name="more-vertical"
-                  size={18}
-                  color={COLORS.TEXT_SECONDARY}
-                />
-              </TouchableOpacity>
-            }
+            duration={song.duration}
+            onAddPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+              Alert.alert(
+                "Add to Playlist",
+                `Thêm "${song.title}" vào danh sách phát. Chức năng đang được phát triển.`,
+              );
+            }}
           />
         );
       })}

@@ -2,7 +2,7 @@ import React from "react";
 import { StyleSheet, Text, View, TouchableOpacity } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { COLORS } from "@/constants/Colors";
-import { SongContainer } from "../common";
+import { SongItem } from "../common";
 import { Track } from "@/types";
 
 interface RecentlyPlayedSectionProps {
@@ -24,19 +24,11 @@ export const RecentlyPlayedSection: React.FC<RecentlyPlayedSectionProps> = ({
       {recentlyPlayed.length > 0 ? (
         <View style={styles.songsList}>
           {recentlyPlayed.map((song) => (
-            <SongContainer
+            <SongItem
               key={song.id}
               song={song}
               onPress={() => onPlaySong(song)}
-              rightElement={
-                <TouchableOpacity style={styles.moreButton} activeOpacity={0.7}>
-                  <Feather
-                    name="more-vertical"
-                    size={18}
-                    color={COLORS.TEXT_SECONDARY}
-                  />
-                </TouchableOpacity>
-              }
+              duration={song.duration}
             />
           ))}
         </View>

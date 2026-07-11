@@ -26,12 +26,12 @@ export const RecentPlayGrid: React.FC = () => {
     <View style={styles.container}>
       {recentlyPlayed.map((track) => (
         <TouchableOpacity
-          key={track.id}
+          key={track._id}
           style={styles.gridItem}
           activeOpacity={0.8}
           onPress={() => handlePress(track)}
         >
-          <Image source={{ uri: track.coverUrl }} style={styles.coverImage} />
+          <Image source={{ uri: track.artwork }} style={styles.coverImage} />
           <View style={styles.textContainer}>
             <Text style={styles.title} numberOfLines={2}>
               {track.title}

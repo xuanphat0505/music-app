@@ -1,42 +1,51 @@
-// Thực thể bài hát
+// Thực thể nghệ sĩ (phản ánh đúng dữ liệu populate từ server)
+export interface Artist {
+  _id: string;
+  audiusId: string;
+  name: string;
+  username: string;
+  avatar: string;
+  bio?: string;
+  followerCount?: number;
+}
+
+// Thực thể bài hát (phản ánh đúng cấu trúc Song schema từ server MongoDB)
 export interface Track {
-  id: string;
+  _id: string;
+  audiusId: string;
   title: string;
-  artist: string;
-  coverUrl: string;
-  audioUrl: string;
   duration: number;
+  artwork: string;
   genre?: string;
-  plays?: string;
+  playsCount: number;
+  audiusPlaysCount: number;
+  artist: Artist | string;
+  album?: any;
+  streamUrl?: string;
 }
 
 // Thực thể danh sách phát
 export interface Playlist {
-  id: string;
+  _id: string;
   title: string;
   description: string;
   coverUrls: string[];
 }
 
-// Thực thể nghệ sĩ
-export interface Artist {
-  id: string;
-  name: string;
-  avatarUrl: string;
-}
-
 // Thực thể album nhạc
 export interface Album {
-  id: string;
+  _id: string;
+  audiusId?: string;
   title: string;
-  artist: string;
-  genre: string;
-  coverUrl: string;
+  artist: Artist | string;
+  genre?: string;
+  artwork: string;
+  songs?: Track[];
 }
 
 // Thực thể thể loại nhạc khám phá
 export interface Category {
-  id: string;
+  _id: string;
   title: string;
   colors: [string, string];
   coverUrl: string;

@@ -78,15 +78,19 @@ export const CategoryDetail: React.FC<CategoryDetailProps> = ({
           filteredSongs.map((song) => {
             return (
               <SongItem
-                key={song.id}
+                key={song._id}
                 song={song}
                 subtitle={
-                  song.plays ? `${song.artist} • ${song.plays} plays` : song.artist
+                  typeof song.artist === "string"
+                    ? song.artist
+                    : song.artist?.name
                 }
                 duration={song.duration}
                 onPress={() => handlePlaySong(song)}
                 onAddPress={() => {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(
+                    () => {},
+                  );
                   Alert.alert(
                     "Add to Playlist",
                     `Thêm "${song.title}" vào danh sách phát. Chức năng đang được phát triển.`,

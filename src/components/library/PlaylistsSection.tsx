@@ -34,7 +34,7 @@ export const PlaylistsSection: React.FC<PlaylistsSectionProps> = ({
       >
         {playlists.map((playlist) => (
           <PlaylistCard
-            key={playlist.id}
+            key={playlist._id}
             playlist={playlist}
             onPress={() => onSelectPlaylist(playlist)}
             onLongPress={() => onLongPressPlaylist(playlist)}

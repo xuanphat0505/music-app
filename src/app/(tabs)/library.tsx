@@ -24,7 +24,7 @@ import { MOCK_ALL_TRACKS } from "@/constants/MockData";
 // Danh sách danh sách phát mẫu với ảnh bìa ghép 2x2 chất lượng cao
 const MOCK_PLAYLISTS: Playlist[] = [
   {
-    id: "p1",
+    _id: "p1",
     title: "Night Drive",
     description: "Curated for You",
     coverUrls: [
@@ -35,7 +35,7 @@ const MOCK_PLAYLISTS: Playlist[] = [
     ],
   },
   {
-    id: "p2",
+    _id: "p2",
     title: "Deep Focus",
     description: "24 Tracks",
     coverUrls: [
@@ -91,7 +91,7 @@ export default function LibraryScreen() {
     const selectedCoverSet = mockImagesPool[nextId % mockImagesPool.length];
 
     const newPlaylist: Playlist = {
-      id: `p${Date.now()}`,
+      _id: `p${Date.now()}`,
       title,
       description: desc || "0 Tracks",
       coverUrls: selectedCoverSet,
@@ -119,7 +119,7 @@ export default function LibraryScreen() {
             Haptics.notificationAsync(
               Haptics.NotificationFeedbackType.Warning,
             ).catch(() => {});
-            setPlaylists(playlists.filter((p) => p.id !== playlist.id));
+            setPlaylists(playlists.filter((p) => p._id !== playlist._id));
           },
         },
       ],
@@ -135,10 +135,10 @@ export default function LibraryScreen() {
   // Hàm xử lý thêm/bớt bài hát khỏi danh sách phát (toggle like)
   const handleToggleAddSong = (song: Track) => {
     triggerHaptic();
-    if (addedSongs.includes(song.id)) {
-      setAddedSongs(addedSongs.filter((id) => id !== song.id));
+    if (addedSongs.includes(song._id)) {
+      setAddedSongs(addedSongs.filter((id) => id !== song._id));
     } else {
-      setAddedSongs([...addedSongs, song.id]);
+      setAddedSongs([...addedSongs, song._id]);
     }
   };
 

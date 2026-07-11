@@ -32,8 +32,17 @@ export const SongItem: React.FC<SongItemProps> = ({
   isAdded = false,
 }) => {
   const currentTrack = usePlayerStore((state) => state.currentTrack);
-  const isActive = currentTrack?.id === song.id;
+  // So sánh bài hát đang hoạt động bằng audiusId hoặc _id từ server
+  const isActive = !!(
+    currentTrack &&
+    (currentTrack._id === song._id || currentTrack.audiusId === song.audiusId)
+  );
 
+  const [imageError, setImageError] = React.useState(false);
+  const artworkUrl =
+    song.artwork && song.artwork.trim() !== "" && !imageError
+      ? song.artwork
+      : "https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?q=80&w=300";
   return (
     <View
       style={[
@@ -47,7 +56,11 @@ export const SongItem: React.FC<SongItemProps> = ({
         activeOpacity={0.7}
         onPress={onPress}
       >
-        <Image source={{ uri: song.coverUrl }} style={styles.cover} />
+        <Image
+          source={{ uri: artworkUrl }}
+          style={styles.cover}
+          onError={() => setImageError(true)}
+        />
         <View style={styles.infoContainer}>
           <Text
             style={[styles.title, isActive && styles.activeTitle]}
@@ -56,7 +69,10 @@ export const SongItem: React.FC<SongItemProps> = ({
             {song.title}
           </Text>
           <Text style={styles.subtitle} numberOfLines={1}>
-            {subtitle || song.artist}
+            {subtitle ||
+              (typeof song.artist === "string"
+                ? song.artist
+                : song.artist?.name)}
           </Text>
         </View>
       </TouchableOpacity>
@@ -71,7 +87,11 @@ export const SongItem: React.FC<SongItemProps> = ({
             {isAdded ? (
               <Ionicons name="checkmark-circle" size={20} color="#1db954" />
             ) : (
-              <Feather name="plus-circle" size={20} color={COLORS.TEXT_SECONDARY} />
+              <Feather
+                name="plus-circle"
+                size={20}
+                color={COLORS.TEXT_SECONDARY}
+              />
             )}
           </TouchableOpacity>
         )}
@@ -82,7 +102,7 @@ export const SongItem: React.FC<SongItemProps> = ({
 };
 
 interface SongItemProps {
-  song: Track;
+  song: Track | any;
   subtitle?: string;
   style?: StyleProp<ViewStyle>;
   onPress?: () => void;

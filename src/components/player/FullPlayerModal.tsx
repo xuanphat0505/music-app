@@ -99,7 +99,7 @@ export const FullPlayerModal: React.FC = () => {
       <View style={styles.container}>
         {/* Hình ảnh album nghệ thuật phóng lớn làm nền mờ động */}
         <Image
-          source={{ uri: currentTrack.coverUrl }}
+          source={{ uri: currentTrack.artwork }}
           style={StyleSheet.absoluteFillObject}
           resizeMode="cover"
         />
@@ -142,7 +142,7 @@ export const FullPlayerModal: React.FC = () => {
 
           {/* Khu vực mâm đĩa CD xoay trung tâm */}
           <View style={styles.cdContainer}>
-            <CDSpin coverUrl={currentTrack.coverUrl} isPlaying={isPlaying} />
+            <CDSpin coverUrl={currentTrack.artwork} isPlaying={isPlaying} />
           </View>
 
           {/* Thông tin tên bài hát và nghệ sĩ */}
@@ -151,7 +151,9 @@ export const FullPlayerModal: React.FC = () => {
               {currentTrack.title}
             </Text>
             <Text style={styles.trackArtist} numberOfLines={1}>
-              {currentTrack.artist}
+              {typeof currentTrack.artist === "string"
+                ? currentTrack.artist
+                : currentTrack.artist?.name}
             </Text>
           </View>
 

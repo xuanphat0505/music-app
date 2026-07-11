@@ -16,4 +16,27 @@ export const ENDPOINTS = {
     PROFILE: "/users/profile",
     SETTINGS: "/users/settings",
   },
+
+  // songs endpoint
+  SONGS: {
+    BASE: "/songs",
+    TRENDING: "/songs/trending",
+    GENRES: "/songs/genres",
+    DETAIL: (id: string) => `/songs/${id}`,
+    PLAY: (id: string) => `/songs/${id}/play`,
+    STREAM: (id: string) => `/songs/stream/${id}`,
+  },
+
+  // artists endpoint
+  ARTISTS: {
+    BASE: "/artists",
+    DETAIL: (id: string) => `/artists/${id}`,
+    SONGS: (id: string) => `/artists/${id}/songs`,
+  },
+
+  // albums endpoint
+  ALBUMS: {
+    BASE: "/albums",
+    DETAIL: (id: string) => `/albums/${id}`,
+  },
 };

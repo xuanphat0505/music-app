@@ -21,13 +21,11 @@ export const SongsList: React.FC<SongsListProps> = ({
     <View style={styles.songsList}>
       {songs.map((song) => (
         <SongItem
-          key={song.id}
+          key={song._id}
           song={song}
-          subtitle={
-            song.plays ? `${song.artist} • ${song.plays} plays` : song.artist
-          }
+          subtitle={`${song.artist}`}
           duration={song.duration}
-          isAdded={addedSongs.includes(song.id)}
+          isAdded={addedSongs.includes(song._id)}
           onPress={() => onPlaySong(song)}
           onAddPress={() => onToggleAddSong(song)}
         />

@@ -51,14 +51,16 @@ export const MiniPlayer: React.FC = () => {
             activeOpacity={0.8}
             onPress={() => setIsFullPlayerVisible(true)}
           >
-            <Image source={{ uri: currentTrack.coverUrl }} style={styles.cover} />
+            <Image source={{ uri: currentTrack.artwork }} style={styles.cover} />
 
             <View style={styles.infoContainer}>
               <Text style={styles.title} numberOfLines={1}>
                 {currentTrack.title}
               </Text>
               <Text style={styles.subtitle} numberOfLines={1}>
-                {currentTrack.artist}
+                {typeof currentTrack.artist === "string"
+                  ? currentTrack.artist
+                  : currentTrack.artist?.name}
               </Text>
             </View>
           </TouchableOpacity>

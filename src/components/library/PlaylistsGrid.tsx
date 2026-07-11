@@ -23,7 +23,7 @@ export const PlaylistsGrid: React.FC<PlaylistsGridProps> = ({
   return (
     <View style={styles.playlistsGrid}>
       {playlists.map((playlist) => (
-        <View key={playlist.id} style={styles.playlistGridItem}>
+        <View key={playlist._id} style={styles.playlistGridItem}>
           <PlaylistCard
             playlist={playlist}
             onPress={() => onSelectPlaylist(playlist)}

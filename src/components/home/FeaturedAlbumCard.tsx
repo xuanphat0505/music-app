@@ -10,12 +10,22 @@ interface FeaturedAlbumCardProps {
 
 // Thẻ hiển thị Album/Playlist nổi bật cuộn ngang trong danh sách phát
 export const FeaturedAlbumCard: React.FC<FeaturedAlbumCardProps> = ({ album, onPress }) => {
+  const [imageError, setImageError] = React.useState(false);
+  const defaultCover = "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=300";
+  
+  // Nếu có lỗi tải ảnh hoặc không có ảnh bìa, dùng ảnh mặc định và không gán onError để tránh lặp vô hạn
+  const useDefault = imageError || !album.artwork || album.artwork.trim() === "";
+
   return (
     <TouchableOpacity style={styles.container} activeOpacity={0.8} onPress={onPress}>
-      <Image source={{ uri: album.coverUrl }} style={styles.cover} />
+      <Image
+        source={{ uri: useDefault ? defaultCover : album.artwork }}
+        style={styles.cover}
+        onError={useDefault ? undefined : () => setImageError(true)}
+      />
       <Text style={styles.title} numberOfLines={1}>{album.title}</Text>
       <Text style={styles.subtitle} numberOfLines={1}>
-        {album.artist}
+        {typeof album.artist === "string" ? album.artist : album.artist?.name}
       </Text>
     </TouchableOpacity>
   );

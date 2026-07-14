@@ -18,7 +18,7 @@ export const loadTokensFromStorage = async () => {
       refreshToken = refresh;
       return true;
     }
-  } catch (error) {
+  } catch {
     // bỏ qua lỗi đọc bộ nhớ nếu xảy ra lỗi phần cứng
   }
   return false;

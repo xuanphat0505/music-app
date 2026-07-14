@@ -9,7 +9,7 @@ export default function Index() {
   // Gọi hàm nạp token và khôi phục phiên đăng nhập khi khởi động app
   useEffect(() => {
     initialize().catch(() => {});
-  }, []);
+  }, [initialize]);
 
   // Trong lúc đang đọc token từ máy lên, hiển thị màn hình chờ tải
   if (!isInitialized) {

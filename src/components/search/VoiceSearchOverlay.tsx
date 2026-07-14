@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useCallback } from "react";
 import {
   StyleSheet,
   Text,
@@ -35,7 +35,7 @@ export const VoiceSearchOverlay: React.FC<VoiceSearchOverlayProps> = ({
   ]).current;
 
   // Khởi động chuỗi hiệu ứng hoạt họa thay đổi độ cao ngẫu nhiên cho từng thanh sóng âm
-  const startWaveAnimation = (index: number) => {
+  const startWaveAnimation = useCallback((index: number) => {
     Animated.sequence([
       Animated.timing(animValues[index], {
         toValue: Math.random() * 1.4 + 0.4,
@@ -52,7 +52,7 @@ export const VoiceSearchOverlay: React.FC<VoiceSearchOverlayProps> = ({
         startWaveAnimation(index);
       }
     });
-  };
+  }, [animValues, visible]);
 
   useEffect(() => {
     let mockTimeout: any;
@@ -78,7 +78,7 @@ export const VoiceSearchOverlay: React.FC<VoiceSearchOverlayProps> = ({
     return () => {
       clearTimeout(mockTimeout);
     };
-  }, [visible]);
+  }, [visible, animValues, onSpeechResult, startWaveAnimation]);
 
   return (
     <Modal

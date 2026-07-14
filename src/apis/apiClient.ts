@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { create } from "axios";
 import { BASE_URL, ENDPOINTS } from "./endpoints";
 import {
   getAccessToken,
@@ -8,7 +8,7 @@ import {
 } from "@/services/tokenService";
 
 // Khởi tạo đối tượng Axios Client dùng chung cho toàn hệ thống
-export const apiClient = axios.create({
+export const apiClient = create({
   baseURL: BASE_URL,
   timeout: 10000,
   headers: {

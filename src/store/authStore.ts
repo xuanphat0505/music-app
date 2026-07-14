@@ -70,7 +70,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   logout: async () => {
     try {
       await authApi.logout();
-    } catch (error) {
+    } catch {
       // bỏ qua lỗi nếu gọi logout api lên server không thành công
     } finally {
       set({
@@ -99,7 +99,7 @@ export const useAuthStore = create<AuthState>((set) => ({
           isAuthenticated: true,
         });
       }
-    } catch (error) {
+    } catch {
       // xóa sạch token nếu token lưu trữ bị sai hoặc hết hạn không làm mới được
       clearTokens();
     } finally {

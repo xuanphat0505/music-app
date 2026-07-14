@@ -28,12 +28,13 @@ export const CDSpin: React.FC<CDSpinProps> = ({ coverUrl, isPlaying }) => {
           easing: Easing.linear,
         }),
         -1,
-        false
+        false,
       );
     } else {
+      rotation.value = 0;
       cancelAnimation(rotation);
     }
-  }, [isPlaying]);
+  }, [isPlaying, rotation]);
 
   const animatedStyle = useAnimatedStyle(() => {
     return {

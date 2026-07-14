@@ -12,6 +12,44 @@ import { COLORS } from "@/constants/Colors";
 import { usePlayerStore } from "@/store/playerStore";
 import { Track } from "@/types";
 
+interface RecentPlayItemProps {
+  track: Track;
+  onPress: (track: Track) => void;
+}
+
+// Hợp phần con hiển thị một thẻ bài hát vừa phát hỗ trợ xử lý lỗi tải ảnh
+const RecentPlayItem: React.FC<RecentPlayItemProps> = ({ track, onPress }) => {
+  const [imageError, setImageError] = React.useState(false);
+
+  React.useEffect(() => {
+    setImageError(false);
+  }, [track._id, track.artwork]);
+
+  const artworkUrl =
+    track.artwork && track.artwork.trim() !== "" && !imageError
+      ? track.artwork
+      : "https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?q=80&w=300";
+
+  return (
+    <TouchableOpacity
+      style={styles.gridItem}
+      activeOpacity={0.8}
+      onPress={() => onPress(track)}
+    >
+      <Image
+        source={{ uri: artworkUrl }}
+        style={styles.coverImage}
+        onError={() => setImageError(true)}
+      />
+      <View style={styles.textContainer}>
+        <Text style={styles.title} numberOfLines={2}>
+          {track.title}
+        </Text>
+      </View>
+    </TouchableOpacity>
+  );
+};
+
 // Thành phần lưới hiển thị sáu bài hát vừa phát gần nhất giúp truy cập nhanh trên trang chủ
 export const RecentPlayGrid: React.FC = () => {
   const { recentlyPlayed, playTrack } = usePlayerStore();
@@ -25,19 +63,11 @@ export const RecentPlayGrid: React.FC = () => {
   return (
     <View style={styles.container}>
       {recentlyPlayed.map((track) => (
-        <TouchableOpacity
+        <RecentPlayItem
           key={track._id}
-          style={styles.gridItem}
-          activeOpacity={0.8}
-          onPress={() => handlePress(track)}
-        >
-          <Image source={{ uri: track.artwork }} style={styles.coverImage} />
-          <View style={styles.textContainer}>
-            <Text style={styles.title} numberOfLines={2}>
-              {track.title}
-            </Text>
-          </View>
-        </TouchableOpacity>
+          track={track}
+          onPress={handlePress}
+        />
       ))}
     </View>
   );

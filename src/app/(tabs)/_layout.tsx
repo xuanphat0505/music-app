@@ -1,14 +1,24 @@
 import { Tabs } from "expo-router";
-import React from "react";
+import React, { useEffect } from "react";
 import { View, StyleSheet } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { COLORS } from "@/constants/Colors";
 import { MiniPlayer } from "@/components/home";
 import { HapticTab } from "@/components/haptic-tab";
 import { FullPlayerModal } from "@/components/player";
+import { AudioService } from "@/services/audioService";
 
 // Bộ bố cục TabLayout cấu hình định dạng thanh điều hướng Bottom Tab Bar
 export default function TabLayout() {
+  useEffect(() => {
+    // Khởi tạo thực thể AudioService để đăng ký theo dõi Zustand store
+    AudioService.getInstance();
+
+    return () => {
+      // Giải phóng tài nguyên âm thanh khi layout bị hủy
+      AudioService.getInstance().stop().catch(() => {});
+    };
+  }, []);
   return (
     <View style={styles.container}>
       <Tabs

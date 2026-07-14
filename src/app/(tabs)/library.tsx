@@ -135,10 +135,11 @@ export default function LibraryScreen() {
   // Hàm xử lý thêm/bớt bài hát khỏi danh sách phát (toggle like)
   const handleToggleAddSong = (song: Track) => {
     triggerHaptic();
-    if (addedSongs.includes(song._id)) {
-      setAddedSongs(addedSongs.filter((id) => id !== song._id));
+    const songId = song._id;
+    if (addedSongs.includes(songId)) {
+      setAddedSongs(addedSongs.filter((id) => id !== songId));
     } else {
-      setAddedSongs([...addedSongs, song._id]);
+      setAddedSongs([...addedSongs, songId]);
     }
   };
 

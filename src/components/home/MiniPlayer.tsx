@@ -19,24 +19,9 @@ export const MiniPlayer: React.FC = () => {
     progress,
     duration,
     togglePlay,
-    setProgress,
     setIsFullPlayerVisible,
+    stopTrack,
   } = usePlayerStore();
-
-  // Tạo khoảng thời gian đếm giây giả lập tiến trình phát nhạc khi đang phát
-  useEffect(() => {
-    let interval: any;
-    if (isPlaying && currentTrack) {
-      interval = setInterval(() => {
-        if (progress < duration) {
-          setProgress(progress + 1);
-        } else {
-          setProgress(0);
-        }
-      }, 1000);
-    }
-    return () => clearInterval(interval);
-  }, [isPlaying, progress, duration, currentTrack]);
 
   if (!currentTrack) return null;
 
@@ -74,7 +59,7 @@ export const MiniPlayer: React.FC = () => {
               />
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.iconButton} activeOpacity={0.7}>
+            <TouchableOpacity style={styles.iconButton} activeOpacity={0.7} onPress={stopTrack}>
               <Feather
                 name="x"
                 size={20}

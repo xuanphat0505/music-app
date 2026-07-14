@@ -34,8 +34,8 @@ export const MusicDNASection: React.FC<MusicDNASectionProps> = ({
           contentContainerStyle={styles.artistsScroll}
         >
           {topArtists.map((artist) => (
-            <View key={artist.id} style={styles.artistCard}>
-              <Image source={{ uri: artist.avatarUrl }} style={styles.artistAvatar} />
+            <View key={artist._id} style={styles.artistCard}>
+              <Image source={{ uri: artist.avatar }} style={styles.artistAvatar} />
               <Text style={styles.artistName} numberOfLines={1}>
                 {artist.name}
               </Text>

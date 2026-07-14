@@ -1,136 +1,148 @@
 import { Track } from "@/types";
 
-export const MOCK_ALL_TRACKS: (Track & { genre: string; plays: string })[] = [
+export const MOCK_ALL_TRACKS: Track[] = [
   {
-    id: "s1",
+    _id: "s1",
+    audiusId: "audius-s1",
     title: "Velocity",
     artist: "Pulse Engine",
-    coverUrl:
+    artwork:
       "https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?q=80&w=150&auto=format&fit=crop",
-    audioUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
     duration: 372,
     genre: "EDM",
-    plays: "2.4M",
+    playsCount: 2400000,
+    audiusPlaysCount: 0,
   },
   {
-    id: "s2",
+    _id: "s2",
+    audiusId: "audius-s2",
     title: "Midnight Blue",
     artist: "Azure Dreams",
-    coverUrl:
+    artwork:
       "https://images.unsplash.com/photo-1498038432885-c6f3f1b912ee?q=80&w=150&auto=format&fit=crop",
-    audioUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3",
     duration: 423,
     genre: "Jazz",
-    plays: "1.8M",
+    playsCount: 1800000,
+    audiusPlaysCount: 0,
   },
   {
-    id: "s3",
+    _id: "s3",
+    audiusId: "audius-s3",
     title: "Fractured",
     artist: "Digital Void",
-    coverUrl:
+    artwork:
       "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?q=80&w=150&auto=format&fit=crop",
-    audioUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3",
     duration: 344,
     genre: "Rock",
-    plays: "3.1M",
+    playsCount: 3100000,
+    audiusPlaysCount: 0,
   },
   {
-    id: "s4",
+    _id: "s4",
+    audiusId: "audius-s4",
     title: "Starlight Drift",
     artist: "Orion",
-    coverUrl:
+    artwork:
       "https://images.unsplash.com/photo-1478760329108-5c3ed9d495a0?q=80&w=150&auto=format&fit=crop",
-    audioUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3",
     duration: 302,
     genre: "Indie",
-    plays: "1.2M",
+    playsCount: 1200000,
+    audiusPlaysCount: 0,
   },
   {
-    id: "s5",
+    _id: "s5",
+    audiusId: "audius-s5",
     title: "Neon Nights",
     artist: "Various Artists",
-    coverUrl:
+    artwork:
       "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=300&auto=format&fit=crop",
-    audioUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3",
     duration: 250,
     genre: "Pop",
-    plays: "950K",
+    playsCount: 950000,
+    audiusPlaysCount: 0,
   },
   {
-    id: "s6",
+    _id: "s6",
+    audiusId: "audius-s6",
     title: "Cyber Echoes",
     artist: "LUN",
-    coverUrl:
+    artwork:
       "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=300&auto=format&fit=crop",
-    audioUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3",
     duration: 280,
     genre: "EDM",
-    plays: "4.2M",
+    playsCount: 4200000,
+    audiusPlaysCount: 0,
   },
   {
-    id: "s7",
+    _id: "s7",
+    audiusId: "audius-s7",
     title: "Vibing",
     artist: "Lofi Chill",
-    coverUrl:
+    artwork:
       "https://images.unsplash.com/photo-1511192336575-5a79af67a629?q=80&w=150&auto=format&fit=crop",
-    audioUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-7.mp3",
     duration: 180,
     genre: "Jazz",
-    plays: "800K",
+    playsCount: 800000,
+    audiusPlaysCount: 0,
   },
   {
-    id: "s8",
+    _id: "s8",
+    audiusId: "audius-s8",
     title: "Rap God Mode",
     artist: "B-Boy",
-    coverUrl:
+    artwork:
       "https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?q=80&w=150&auto=format&fit=crop",
-    audioUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3",
     duration: 210,
     genre: "Hip Hop",
-    plays: "5.7M",
+    playsCount: 5700000,
+    audiusPlaysCount: 0,
   },
   {
-    id: "s9",
+    _id: "s9",
+    audiusId: "audius-s9",
     title: "Urban Street",
     artist: "Flow Master",
-    coverUrl:
+    artwork:
       "https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?q=80&w=150&auto=format&fit=crop",
-    audioUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-9.mp3",
     duration: 195,
     genre: "Hip Hop",
-    plays: "1.5M",
+    playsCount: 1500000,
+    audiusPlaysCount: 0,
   },
   {
-    id: "s10",
+    _id: "s10",
+    audiusId: "audius-s10",
     title: "Acoustic Sun",
     artist: "Folk Singer",
-    coverUrl:
+    artwork:
       "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?q=80&w=150&auto=format&fit=crop",
-    audioUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-10.mp3",
     duration: 220,
     genre: "Indie",
-    plays: "320K",
+    playsCount: 320000,
+    audiusPlaysCount: 0,
   },
   {
-    id: "s11",
+    _id: "s11",
+    audiusId: "audius-s11",
     title: "Future Retro",
     artist: "Synthwave Pro",
-    coverUrl:
+    artwork:
       "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=300&auto=format&fit=crop",
-    audioUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
     duration: 310,
     genre: "Pop",
-    plays: "2.1M",
+    playsCount: 2100000,
+    audiusPlaysCount: 0,
   },
   {
-    id: "s12",
+    _id: "s12",
+    audiusId: "audius-s12",
     title: "Rock Anthem",
     artist: "Thunder Crew",
-    coverUrl:
+    artwork:
       "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=300&auto=format&fit=crop",
-    audioUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3",
     duration: 290,
     genre: "Rock",
-    plays: "6.4M",
+    playsCount: 6400000,
+    audiusPlaysCount: 0,
   },
 ];

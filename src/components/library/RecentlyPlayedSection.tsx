@@ -25,7 +25,7 @@ export const RecentlyPlayedSection: React.FC<RecentlyPlayedSectionProps> = ({
         <View style={styles.songsList}>
           {recentlyPlayed.map((song) => (
             <SongItem
-              key={song.id}
+              key={song._id}
               song={song}
               onPress={() => onPlaySong(song)}
               duration={song.duration}

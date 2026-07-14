@@ -9,32 +9,40 @@ import {
   MusicDNASection,
   SettingsGroup,
 } from "@/components/profile";
-import { SettingItem } from "@/types";
+import { SettingItem, Artist } from "@/types";
 import { useAuth } from "@/hooks/useAuth";
 
-const MOCK_TOP_ARTISTS = [
+const MOCK_TOP_ARTISTS: Artist[] = [
   {
-    id: "a1",
+    _id: "a1",
+    audiusId: "audius-a1",
     name: "LUN",
-    avatarUrl:
+    username: "lun_music",
+    avatar:
       "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=150&auto=format&fit=crop",
   },
   {
-    id: "a2",
+    _id: "a2",
+    audiusId: "audius-a2",
     name: "Pulse Engine",
-    avatarUrl:
+    username: "pulse_engine",
+    avatar:
       "https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?q=80&w=150&auto=format&fit=crop",
   },
   {
-    id: "a3",
+    _id: "a3",
+    audiusId: "audius-a3",
     name: "Azure Dreams",
-    avatarUrl:
+    username: "azure_dreams",
+    avatar:
       "https://images.unsplash.com/photo-1498038432885-c6f3f1b912ee?q=80&w=150&auto=format&fit=crop",
   },
   {
-    id: "a4",
+    _id: "a4",
+    audiusId: "audius-a4",
     name: "Orion",
-    avatarUrl:
+    username: "orion_drift",
+    avatar:
       "https://images.unsplash.com/photo-1478760329108-5c3ed9d495a0?q=80&w=150&auto=format&fit=crop",
   },
 ];

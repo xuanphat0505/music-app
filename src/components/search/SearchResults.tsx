@@ -47,7 +47,7 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
       {results.map((song) => {
         return (
           <SongItem
-            key={song.id}
+            key={song._id}
             song={song}
             onPress={() => handlePlaySong(song)}
             duration={song.duration}

@@ -29,16 +29,13 @@ export const TrendingSong: React.FC<TrendingSongProps> = ({ song }) => {
   const totalPlays = (song.playsCount || 0) + (song.audiusPlaysCount || 0);
   const playsText = formatPlays(totalPlays);
 
-  // Đường dẫn stream đi qua NestJS server để redirect sang Audius node khỏe nhất
-  const audioUrl = `${BASE_URL}${ENDPOINTS.SONGS.STREAM(song.audiusId)}`;
-
   return (
     <SongItem
       song={song}
       subtitle={`${artistName} • ${playsText} plays`}
       duration={song.duration}
       style={styles.rowMargin}
-      onPress={() => playTrack({ ...song, audioUrl })}
+      onPress={() => playTrack(song)}
       onAddPress={() => {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
         Alert.alert(

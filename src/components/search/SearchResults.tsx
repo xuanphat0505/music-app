@@ -35,7 +35,7 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
         />
         <Text style={styles.noResultsTitle}>No results found</Text>
         <Text style={styles.noResultsSubtitle}>
-          We couldn't find any tracks matching "{searchQuery}"
+          {`We couldn't find any tracks matching "${searchQuery}"`}
         </Text>
       </View>
     );
@@ -47,7 +47,7 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
       {results.map((song) => {
         return (
           <SongItem
-            key={song.id}
+            key={song._id}
             song={song}
             onPress={() => handlePlaySong(song)}
             duration={song.duration}

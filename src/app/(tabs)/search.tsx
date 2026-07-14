@@ -19,42 +19,42 @@ import { Category } from "@/types";
 // Danh sách thể loại nhạc giả lập với màu gradient và hình ảnh
 const CATEGORIES: Category[] = [
   {
-    id: "c1",
+    _id: "c1",
     title: "Pop",
     colors: ["#ff5a14", "#ff8f59"] as [string, string],
     coverUrl:
       "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=150&auto=format&fit=crop",
   },
   {
-    id: "c2",
+    _id: "c2",
     title: "Rock",
     colors: ["#4d44b5", "#6b5ce7"] as [string, string],
     coverUrl:
       "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=150&auto=format&fit=crop",
   },
   {
-    id: "c3",
+    _id: "c3",
     title: "EDM",
     colors: ["#00e5c9", "#00b39d"] as [string, string],
     coverUrl:
       "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=150&auto=format&fit=crop",
   },
   {
-    id: "c4",
+    _id: "c4",
     title: "Jazz",
     colors: ["#ff5a14", "#4d44b5"] as [string, string],
     coverUrl:
       "https://images.unsplash.com/photo-1511192336575-5a79af67a629?q=80&w=150&auto=format&fit=crop",
   },
   {
-    id: "c5",
+    _id: "c5",
     title: "Hip Hop",
     colors: ["#4d44b5", "#00e5c9"] as [string, string],
     coverUrl:
       "https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?q=80&w=150&auto=format&fit=crop",
   },
   {
-    id: "c6",
+    _id: "c6",
     title: "Indie",
     colors: ["#18181c", "#2c2c35"] as [string, string],
     coverUrl:
@@ -109,11 +109,14 @@ export default function SearchScreen() {
   };
 
   // Lọc danh sách bài hát khớp với từ khóa tìm kiếm của người dùng
-  const searchResults = MOCK_ALL_TRACKS.filter(
-    (track) =>
-      track.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      track.artist.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const searchResults = MOCK_ALL_TRACKS.filter((track) => {
+    const titleMatch = track.title.toLowerCase().includes(searchQuery.toLowerCase());
+    const artistName = typeof track.artist === "string"
+      ? track.artist
+      : track.artist?.name || "";
+    const artistMatch = artistName.toLowerCase().includes(searchQuery.toLowerCase());
+    return titleMatch || artistMatch;
+  });
 
   return (
     <SafeAreaView style={styles.container}>

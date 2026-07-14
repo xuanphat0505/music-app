@@ -1,7 +1,6 @@
 import React from "react";
-import { StyleSheet, TouchableOpacity, View } from "react-native";
+import { StyleSheet, TouchableOpacity, View, TextInput } from "react-native";
 import { COLORS } from "@/constants/Colors";
-import { TextInput } from "react-native";
 import { Feather } from "@expo/vector-icons";
 
 interface SearchBarProps {

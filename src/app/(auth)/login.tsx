@@ -187,7 +187,7 @@ export default function LoginScreen() {
 
             {/* Đường dẫn sang trang Đăng ký */}
             <View style={styles.footerRow}>
-              <Text style={styles.footerText}>Don't have an account? </Text>
+              <Text style={styles.footerText}>{"Don't have an account? "}</Text>
               <TouchableOpacity
                 onPress={() => {
                   triggerHaptic();

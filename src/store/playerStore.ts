@@ -13,6 +13,7 @@ interface PlayerState {
   setProgress: (progress: number) => void;
   setDuration: (duration: number) => void;
   setIsFullPlayerVisible: (visible: boolean) => void;
+  stopTrack: () => void;
 }
 
 // Khởi tạo kho lưu trữ trạng thái phát nhạc toàn cục của ứng dụng giúp điều phối hoạt động phát nhạc
@@ -52,4 +53,7 @@ export const usePlayerStore = create<PlayerState>((set) => ({
 
   // Hàm cập nhật trạng thái hiển thị của trình phát nhạc lớn
   setIsFullPlayerVisible: (visible) => set({ isFullPlayerVisible: visible }),
+
+  // Hàm dừng phát nhạc và đặt lại các trạng thái về ban đầu để đóng trình phát
+  stopTrack: () => set({ currentTrack: null, isPlaying: false, progress: 0, duration: 0 }),
 }));

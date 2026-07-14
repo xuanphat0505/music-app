@@ -31,7 +31,7 @@ export const CategoryDetail: React.FC<CategoryDetailProps> = ({
 
   // Lọc danh sách bài hát thuộc thể loại nhạc này từ danh sách giả lập
   const filteredSongs = MOCK_ALL_TRACKS.filter(
-    (song) => song.genre.toLowerCase() === category.title.toLowerCase(),
+    (song) => song.genre?.toLowerCase() === category.title.toLowerCase(),
   );
 
   // Hàm xử lý phát nhạc và phản hồi rung khi chạm chọn bài hát trong danh mục

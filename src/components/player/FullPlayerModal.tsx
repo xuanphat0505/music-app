@@ -6,9 +6,9 @@ import {
   Image,
   TouchableOpacity,
   Modal,
-  SafeAreaView,
   Alert,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
 import { BlurView } from "expo-blur";
 import { LinearGradient } from "expo-linear-gradient";
@@ -18,6 +18,7 @@ import * as Haptics from "expo-haptics";
 import { COLORS } from "@/constants/Colors";
 import { usePlayerStore } from "@/store/playerStore";
 import { CDSpin } from "@/components/player";
+import { AudioService } from "@/services/audioService";
 
 // Định dạng giây thành phút và giây
 const formatTime = (seconds: number) => {
@@ -53,6 +54,10 @@ export const FullPlayerModal: React.FC = () => {
 
   if (!currentTrack) return null;
 
+  const artworkUrl =
+    currentTrack.artwork ||
+    "https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?q=80&w=300";
+
   // Hàm xử lý thu nhỏ màn hình phát nhạc về dạng thanh MiniPlayer dưới cùng
   const handleMinimize = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
@@ -86,6 +91,7 @@ export const FullPlayerModal: React.FC = () => {
   const handleSlidingComplete = (value: number) => {
     setIsDragging(false);
     setProgress(value);
+    AudioService.getInstance().seekTo(value).catch(() => {});
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
   };
 
@@ -99,7 +105,7 @@ export const FullPlayerModal: React.FC = () => {
       <View style={styles.container}>
         {/* Hình ảnh album nghệ thuật phóng lớn làm nền mờ động */}
         <Image
-          source={{ uri: currentTrack.artwork }}
+          source={{ uri: artworkUrl }}
           style={StyleSheet.absoluteFillObject}
           resizeMode="cover"
         />
@@ -142,7 +148,7 @@ export const FullPlayerModal: React.FC = () => {
 
           {/* Khu vực mâm đĩa CD xoay trung tâm */}
           <View style={styles.cdContainer}>
-            <CDSpin coverUrl={currentTrack.artwork} isPlaying={isPlaying} />
+            <CDSpin coverUrl={artworkUrl} isPlaying={isPlaying} />
           </View>
 
           {/* Thông tin tên bài hát và nghệ sĩ */}

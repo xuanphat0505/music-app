@@ -39,6 +39,11 @@ export const SongItem: React.FC<SongItemProps> = ({
   );
 
   const [imageError, setImageError] = React.useState(false);
+
+  React.useEffect(() => {
+    setImageError(false);
+  }, [song._id, song.artwork]);
+
   const artworkUrl =
     song.artwork && song.artwork.trim() !== "" && !imageError
       ? song.artwork

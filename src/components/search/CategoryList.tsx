@@ -27,7 +27,7 @@ export const CategoryList: React.FC<CategoryListProps> = ({
       <View style={styles.categoryGrid}>
         {categories.map((category) => (
           <TouchableOpacity
-            key={category.id}
+            key={category._id}
             activeOpacity={0.9}
             style={styles.categoryCardWrapper}
             onPress={() => onSelectCategory(category)}

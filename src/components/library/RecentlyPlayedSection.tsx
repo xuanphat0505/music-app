@@ -1,6 +1,5 @@
 import React from "react";
-import { StyleSheet, Text, View, TouchableOpacity } from "react-native";
-import { Feather } from "@expo/vector-icons";
+import { StyleSheet, Text, View } from "react-native";
 import { COLORS } from "@/constants/Colors";
 import { SongItem } from "../common";
 import { Track } from "@/types";

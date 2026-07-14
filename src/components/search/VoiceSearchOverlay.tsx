@@ -113,7 +113,7 @@ export const VoiceSearchOverlay: React.FC<VoiceSearchOverlayProps> = ({
             ))}
           </View>
 
-          <Text style={styles.hintText}>Say "Midnight Blue" or "Velocity"</Text>
+          <Text style={styles.hintText}>{'Say "Midnight Blue" or "Velocity"'}</Text>
 
           {/* Nút hủy bỏ đóng giao diện giọng nói */}
           <TouchableOpacity

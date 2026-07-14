@@ -4,8 +4,6 @@ import { SongItem } from "../common";
 import { usePlayerStore } from "@/store/playerStore";
 import { Track } from "@/types";
 import * as Haptics from "expo-haptics";
-import { ENDPOINTS } from "@/apis/endpoints";
-import { BASE_URL } from "@/apis/endpoints";
 
 // Hàm định dạng số lượt nghe thành cỗi ngắn gọn (ví dụ: 1500 -> 1.5K)
 const formatPlays = (count: number): string => {

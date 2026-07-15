@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { StyleSheet, View, Image } from "react-native";
 import Animated, {
   useSharedValue,
@@ -18,6 +18,12 @@ interface CDSpinProps {
 // Component mâm đĩa CD xoay tròn có kèm viền phát sáng Neon đổi màu mượt mà
 export const CDSpin: React.FC<CDSpinProps> = ({ coverUrl, isPlaying }) => {
   const rotation = useSharedValue(0);
+  const [imageError, setImageError] = useState(false);
+
+  // Khởi tạo lại lỗi ảnh khi thay đổi ảnh bìa mới
+  useEffect(() => {
+    setImageError(false);
+  }, [coverUrl]);
 
   // Kích hoạt hoặc tạm dừng hoạt họa xoay đĩa CD dựa theo trạng thái phát nhạc
   useEffect(() => {
@@ -31,16 +37,36 @@ export const CDSpin: React.FC<CDSpinProps> = ({ coverUrl, isPlaying }) => {
         false,
       );
     } else {
-      rotation.value = 0;
       cancelAnimation(rotation);
     }
   }, [isPlaying, rotation]);
+
+  // Đặt lại góc xoay về 0 khi đổi bài hát mới (ảnh bìa thay đổi) giúp ảnh bìa hiển thị thẳng đứng
+  useEffect(() => {
+    cancelAnimation(rotation);
+    rotation.value = 0;
+    if (isPlaying) {
+      rotation.value = withRepeat(
+        withTiming(360, {
+          duration: 12000,
+          easing: Easing.linear,
+        }),
+        -1,
+        false,
+      );
+    }
+  }, [coverUrl]);
 
   const animatedStyle = useAnimatedStyle(() => {
     return {
       transform: [{ rotate: `${rotation.value}deg` }],
     };
   });
+
+  const artworkUrl =
+    coverUrl && coverUrl.trim() !== "" && !imageError
+      ? coverUrl
+      : "https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?q=80&w=300";
 
   return (
     <View style={styles.container}>
@@ -49,7 +75,11 @@ export const CDSpin: React.FC<CDSpinProps> = ({ coverUrl, isPlaying }) => {
 
       <Animated.View style={[styles.vinylPlate, animatedStyle]}>
         <View style={styles.grooveRing} />
-        <Image source={{ uri: coverUrl }} style={styles.albumArt} />
+        <Image
+          source={{ uri: artworkUrl }}
+          style={styles.albumArt}
+          onError={() => setImageError(true)}
+        />
         <View style={styles.centerHole} />
       </Animated.View>
     </View>

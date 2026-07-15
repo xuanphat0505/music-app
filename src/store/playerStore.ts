@@ -6,6 +6,7 @@ interface PlayerState {
   isPlaying: boolean;
   progress: number;
   duration: number;
+  isBuffering: boolean;
   recentlyPlayed: Track[];
   isFullPlayerVisible: boolean;
   playTrack: (track: Track | any) => void;
@@ -14,6 +15,7 @@ interface PlayerState {
   setDuration: (duration: number) => void;
   setIsFullPlayerVisible: (visible: boolean) => void;
   stopTrack: () => void;
+  setIsBuffering: (isBuffering: boolean) => void;
 }
 
 // Khởi tạo kho lưu trữ trạng thái phát nhạc toàn cục của ứng dụng giúp điều phối hoạt động phát nhạc
@@ -22,6 +24,7 @@ export const usePlayerStore = create<PlayerState>((set) => ({
   isPlaying: false,
   progress: 0,
   duration: 0,
+  isBuffering: false,
   recentlyPlayed: [],
   isFullPlayerVisible: false,
 
@@ -37,6 +40,7 @@ export const usePlayerStore = create<PlayerState>((set) => ({
         isPlaying: true,
         progress: 0,
         duration: track.duration,
+        isBuffering: true,
         recentlyPlayed: updatedList,
         isFullPlayerVisible: true,
       };
@@ -55,5 +59,8 @@ export const usePlayerStore = create<PlayerState>((set) => ({
   setIsFullPlayerVisible: (visible) => set({ isFullPlayerVisible: visible }),
 
   // Hàm dừng phát nhạc và đặt lại các trạng thái về ban đầu để đóng trình phát
-  stopTrack: () => set({ currentTrack: null, isPlaying: false, progress: 0, duration: 0 }),
+  stopTrack: () => set({ currentTrack: null, isPlaying: false, progress: 0, duration: 0, isBuffering: false }),
+
+  // Hàm cập nhật trạng thái đang tải hoặc buffering nhạc từ thiết bị native
+  setIsBuffering: (isBuffering) => set({ isBuffering }),
 }));

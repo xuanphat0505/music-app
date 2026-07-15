@@ -39,22 +39,34 @@ export class AudioService {
   // Hàm khởi tạo đăng ký theo dõi trạng thái thay đổi bài hát từ store để điều phối phát nhạc
   private constructor() {
     let lastTrackId: string | null = null;
+    let lastAudiusId: string | null = null;
     let lastIsPlaying = false;
+    let hasTrack = false;
 
     usePlayerStore.subscribe((state) => {
       const currentTrack = state.currentTrack;
       const isPlaying = state.isPlaying;
 
-      if (currentTrack && currentTrack._id !== lastTrackId) {
+      const trackChanged = currentTrack && (
+        !hasTrack ||
+        (currentTrack._id !== undefined && currentTrack._id !== lastTrackId) ||
+        (currentTrack.audiusId !== undefined && currentTrack.audiusId !== lastAudiusId)
+      );
+
+      if (currentTrack && trackChanged) {
         lastTrackId = currentTrack._id || null;
+        lastAudiusId = currentTrack.audiusId || null;
         lastIsPlaying = isPlaying;
+        hasTrack = true;
         this.loadAndPlay(currentTrack).catch(() => {});
       } else if (currentTrack && isPlaying !== lastIsPlaying) {
         lastIsPlaying = isPlaying;
         this.syncPlayState(isPlaying).catch(() => {});
-      } else if (!currentTrack && lastTrackId !== null) {
+      } else if (!currentTrack && hasTrack) {
         lastTrackId = null;
+        lastAudiusId = null;
         lastIsPlaying = false;
+        hasTrack = false;
         this.stop().catch(() => {});
       }
     });
@@ -79,6 +91,8 @@ export class AudioService {
   // Tải luồng nhạc trực tuyến từ máy chủ và bắt đầu phát nhạc qua trình phát
   public async loadAndPlay(track: Track) {
     try {
+      const { setIsBuffering } = usePlayerStore.getState();
+      setIsBuffering(true);
       await this.setupAudioMode();
 
       if (this.statusSubscription) {
@@ -86,6 +100,9 @@ export class AudioService {
         this.statusSubscription = null;
       }
       if (this.sound) {
+        try {
+          this.sound.pause();
+        } catch {}
         this.sound.remove();
         this.sound = null;
       }
@@ -114,7 +131,8 @@ export class AudioService {
 
       musicApi.playSong(track._id!).catch(() => {});
     } catch {
-      // xử lý ngoại lệ khi tải nhạc trực tuyến thất bại
+      const { setIsBuffering } = usePlayerStore.getState();
+      setIsBuffering(false);
     }
   }
 
@@ -147,11 +165,17 @@ export class AudioService {
   // Dừng phát nhạc hiện tại và giải phóng các tài nguyên trình phát để tiết kiệm bộ nhớ
   public async stop() {
     try {
+      const { setIsBuffering } = usePlayerStore.getState();
+      setIsBuffering(false);
+
       if (this.statusSubscription) {
         this.statusSubscription.remove();
         this.statusSubscription = null;
       }
       if (this.sound) {
+        try {
+          this.sound.pause();
+        } catch {}
         this.sound.remove();
         this.sound = null;
       }
@@ -162,11 +186,13 @@ export class AudioService {
 
   // Nhận các thông tin cập nhật trạng thái hoạt động thực tế từ trình phát nhạc
   private onPlaybackStatusUpdate(status: AudioStatus) {
+    const { setProgress, setDuration, setIsBuffering } = usePlayerStore.getState();
+
+    setIsBuffering(status.isBuffering);
+
     if (!status.isLoaded) {
       return;
     }
-
-    const { setProgress, setDuration } = usePlayerStore.getState();
 
     const progressSeconds = Math.floor(status.currentTime);
     const durationSeconds = Math.floor(status.duration ? status.duration : 0);
@@ -183,7 +209,8 @@ export class AudioService {
 
   // Xử lý thiết lập lại trạng thái khi bài hát phát hết thời lượng
   private async handlePlaybackFinished() {
-    const { togglePlay, setProgress } = usePlayerStore.getState();
+    const { togglePlay, setProgress, setIsBuffering } = usePlayerStore.getState();
+    setIsBuffering(false);
     setProgress(0);
     togglePlay();
     if (this.sound) {

@@ -5,6 +5,7 @@ import {
   View,
   Image,
   TouchableOpacity,
+  ActivityIndicator,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { COLORS } from "@/constants/Colors";
@@ -18,6 +19,7 @@ export const MiniPlayer: React.FC = () => {
     isPlaying,
     progress,
     duration,
+    isBuffering,
     togglePlay,
     setIsFullPlayerVisible,
     stopTrack,
@@ -51,13 +53,19 @@ export const MiniPlayer: React.FC = () => {
           </TouchableOpacity>
 
           <View style={styles.controls}>
-            <TouchableOpacity activeOpacity={0.8} onPress={togglePlay} style={styles.iconButton}>
-              <Feather
-                name={isPlaying ? "pause" : "play"}
-                size={22}
-                color={COLORS.PRIMARY}
-              />
-            </TouchableOpacity>
+            {isBuffering ? (
+              <View style={styles.iconButton}>
+                <ActivityIndicator size="small" color={COLORS.PRIMARY} />
+              </View>
+            ) : (
+              <TouchableOpacity activeOpacity={0.8} onPress={togglePlay} style={styles.iconButton}>
+                <Feather
+                  name={isPlaying ? "pause" : "play"}
+                  size={22}
+                  color={COLORS.PRIMARY}
+                />
+              </TouchableOpacity>
+            )}
 
             <TouchableOpacity style={styles.iconButton} activeOpacity={0.7} onPress={stopTrack}>
               <Feather

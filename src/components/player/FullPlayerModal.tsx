@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Modal,
   Alert,
+  ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
@@ -34,6 +35,7 @@ export const FullPlayerModal: React.FC = () => {
     isPlaying,
     progress,
     duration,
+    isBuffering,
     isFullPlayerVisible,
     togglePlay,
     setProgress,
@@ -148,7 +150,7 @@ export const FullPlayerModal: React.FC = () => {
 
           {/* Khu vực mâm đĩa CD xoay trung tâm */}
           <View style={styles.cdContainer}>
-            <CDSpin coverUrl={artworkUrl} isPlaying={isPlaying} />
+            <CDSpin coverUrl={artworkUrl} isPlaying={isPlaying && !isBuffering} />
           </View>
 
           {/* Thông tin tên bài hát và nghệ sĩ */}
@@ -200,19 +202,23 @@ export const FullPlayerModal: React.FC = () => {
               <Feather name="skip-back" size={26} color={COLORS.TEXT_PRIMARY} />
             </TouchableOpacity>
 
-            <TouchableOpacity onPress={togglePlay} activeOpacity={0.8}>
+            <TouchableOpacity onPress={togglePlay} activeOpacity={0.8} disabled={isBuffering}>
               <LinearGradient
                 colors={[COLORS.PRIMARY, COLORS.SECONDARY]}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
                 style={styles.playPauseButton}
               >
-                <Feather
-                  name={isPlaying ? "pause" : "play"}
-                  size={28}
-                  color="#ffffff"
-                  style={!isPlaying && styles.playIconOffset}
-                />
+                {isBuffering ? (
+                  <ActivityIndicator size="small" color="#ffffff" />
+                ) : (
+                  <Feather
+                    name={isPlaying ? "pause" : "play"}
+                    size={28}
+                    color="#ffffff"
+                    style={!isPlaying && styles.playIconOffset}
+                  />
+                )}
               </LinearGradient>
             </TouchableOpacity>
 

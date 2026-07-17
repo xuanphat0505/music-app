@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { Track } from "@/types";
+import { musicApi } from "@/apis/musicApi";
 
 interface PlayerState {
   currentTrack: Track | null;
@@ -9,6 +10,8 @@ interface PlayerState {
   isBuffering: boolean;
   recentlyPlayed: Track[];
   isFullPlayerVisible: boolean;
+  currentLyrics: { lyrics?: string; syncedLyrics?: string } | null;
+  isLyricsLoading: boolean;
   playTrack: (track: Track | any) => void;
   togglePlay: () => void;
   setProgress: (progress: number) => void;
@@ -16,10 +19,12 @@ interface PlayerState {
   setIsFullPlayerVisible: (visible: boolean) => void;
   stopTrack: () => void;
   setIsBuffering: (isBuffering: boolean) => void;
+  fetchLyrics: (songId: string) => Promise<void>;
+  resetLyrics: () => void;
 }
 
 // Khởi tạo kho lưu trữ trạng thái phát nhạc toàn cục của ứng dụng giúp điều phối hoạt động phát nhạc
-export const usePlayerStore = create<PlayerState>((set) => ({
+export const usePlayerStore = create<PlayerState>((set, get) => ({
   currentTrack: null,
   isPlaying: false,
   progress: 0,
@@ -27,9 +32,18 @@ export const usePlayerStore = create<PlayerState>((set) => ({
   isBuffering: false,
   recentlyPlayed: [],
   isFullPlayerVisible: false,
+  currentLyrics: null,
+  isLyricsLoading: false,
 
   // Hàm kích hoạt phát một bài hát mới và thiết lập lại các thông số thời gian cùng danh sách phát gần đây
-  playTrack: (track) =>
+  playTrack: (track) => {
+    // Gọi tải lời bài hát bất đồng bộ ngay khi đổi bài
+    if (track._id) {
+      setTimeout(() => {
+        get().fetchLyrics(track._id);
+      }, 0);
+    }
+    
     set((state) => {
       // Loại bỏ bài hát trùng lặp trong lịch sử cũ
       const filtered = state.recentlyPlayed.filter((t) => t._id !== track._id);
@@ -43,8 +57,10 @@ export const usePlayerStore = create<PlayerState>((set) => ({
         isBuffering: true,
         recentlyPlayed: updatedList,
         isFullPlayerVisible: true,
+        currentLyrics: null, // Reset lời bài hát cũ
       };
-    }),
+    });
+  },
 
   // Hàm chuyển đổi trạng thái tạm dừng hoặc tiếp tục phát nhạc hiện tại
   togglePlay: () => set((state) => ({ isPlaying: !state.isPlaying })),
@@ -59,8 +75,24 @@ export const usePlayerStore = create<PlayerState>((set) => ({
   setIsFullPlayerVisible: (visible) => set({ isFullPlayerVisible: visible }),
 
   // Hàm dừng phát nhạc và đặt lại các trạng thái về ban đầu để đóng trình phát
-  stopTrack: () => set({ currentTrack: null, isPlaying: false, progress: 0, duration: 0, isBuffering: false }),
+  stopTrack: () => set({ currentTrack: null, isPlaying: false, progress: 0, duration: 0, isBuffering: false, currentLyrics: null }),
 
   // Hàm cập nhật trạng thái đang tải hoặc buffering nhạc từ thiết bị native
   setIsBuffering: (isBuffering) => set({ isBuffering }),
+
+  // Hàm tải lời bài hát bất đồng bộ từ Server và lưu vào cache của store
+  fetchLyrics: async (songId) => {
+    set({ isLyricsLoading: true, currentLyrics: null });
+    try {
+      const response = await musicApi.getSongLyrics(songId);
+      // Gán trực tiếp vì API wrapper đã bóc tách thuộc tính data từ trước
+      set({ currentLyrics: response, isLyricsLoading: false });
+    } catch {
+      // Đặt giá trị rỗng để tránh vòng lặp gọi API vô hạn khi xảy ra lỗi kết nối
+      set({ currentLyrics: { lyrics: "", syncedLyrics: "" }, isLyricsLoading: false });
+    }
+  },
+
+  // Hàm đặt lại trạng thái lời bài hát về trống
+  resetLyrics: () => set({ currentLyrics: null, isLyricsLoading: false }),
 }));

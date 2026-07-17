@@ -41,6 +41,12 @@ export const musicApi = {
     return response.data;
   },
 
+  // Lấy lời bài hát theo ID hoặc audiusId
+  getSongLyrics: async (id: string) => {
+    const response: any = await apiClient.get(ENDPOINTS.SONGS.LYRICS(id));
+    return response.data;
+  },
+
   // Lấy danh sách nghệ sĩ/ca sĩ có phân trang và tìm kiếm
   getArtists: async (params?: {
     q?: string;

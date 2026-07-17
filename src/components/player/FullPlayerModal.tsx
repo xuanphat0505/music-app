@@ -18,7 +18,7 @@ import * as Haptics from "expo-haptics";
 
 import { COLORS } from "@/constants/Colors";
 import { usePlayerStore } from "@/store/playerStore";
-import { CDSpin } from "@/components/player";
+import { CDSpin, LyricsModal } from "@/components/player";
 import { AudioService } from "@/services/audioService";
 
 // Định dạng giây thành phút và giây
@@ -46,6 +46,12 @@ export const FullPlayerModal: React.FC = () => {
   const [localProgress, setLocalProgress] = useState(0);
   const [isShuffle, setIsShuffle] = useState(false);
   const [isRepeat, setIsRepeat] = useState(false);
+  const [showLyrics, setShowLyrics] = useState(false);
+
+  // Reset trạng thái xem lyrics khi bài hát thay đổi
+  useEffect(() => {
+    setShowLyrics(false);
+  }, [currentTrack?._id]);
 
   // Đồng bộ tiến trình bài hát từ store khi người dùng không kéo thanh trượt
   useEffect(() => {
@@ -64,6 +70,7 @@ export const FullPlayerModal: React.FC = () => {
   const handleMinimize = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
     setIsFullPlayerVisible(false);
+    setShowLyrics(false);
   };
 
   // Hàm xử lý khi người dùng nhấn nút chuyển tiếp hoặc quay lại bài hát
@@ -93,7 +100,9 @@ export const FullPlayerModal: React.FC = () => {
   const handleSlidingComplete = (value: number) => {
     setIsDragging(false);
     setProgress(value);
-    AudioService.getInstance().seekTo(value).catch(() => {});
+    AudioService.getInstance()
+      .seekTo(value)
+      .catch(() => {});
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
   };
 
@@ -150,7 +159,10 @@ export const FullPlayerModal: React.FC = () => {
 
           {/* Khu vực mâm đĩa CD xoay trung tâm */}
           <View style={styles.cdContainer}>
-            <CDSpin coverUrl={artworkUrl} isPlaying={isPlaying && !isBuffering} />
+            <CDSpin
+              coverUrl={artworkUrl}
+              isPlaying={isPlaying && !isBuffering}
+            />
           </View>
 
           {/* Thông tin tên bài hát và nghệ sĩ */}
@@ -202,7 +214,11 @@ export const FullPlayerModal: React.FC = () => {
               <Feather name="skip-back" size={26} color={COLORS.TEXT_PRIMARY} />
             </TouchableOpacity>
 
-            <TouchableOpacity onPress={togglePlay} activeOpacity={0.8} disabled={isBuffering}>
+            <TouchableOpacity
+              onPress={togglePlay}
+              activeOpacity={0.8}
+              disabled={isBuffering}
+            >
               <LinearGradient
                 colors={[COLORS.PRIMARY, COLORS.SECONDARY]}
                 start={{ x: 0, y: 0 }}
@@ -262,7 +278,7 @@ export const FullPlayerModal: React.FC = () => {
             <TouchableOpacity
               style={styles.footerButton}
               activeOpacity={0.7}
-              onPress={() => Alert.alert("Lyrics", "Opening song lyrics")}
+              onPress={() => setShowLyrics(true)}
             >
               <Feather
                 name="align-left"
@@ -273,6 +289,13 @@ export const FullPlayerModal: React.FC = () => {
             </TouchableOpacity>
           </View>
         </SafeAreaView>
+
+        {/* Modal hiển thị lời bài hát với nền màu trơn riêng biệt */}
+        <LyricsModal
+          visible={showLyrics}
+          onClose={() => setShowLyrics(false)}
+        />
+
       </View>
     </Modal>
   );

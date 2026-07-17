@@ -25,6 +25,7 @@ export const ENDPOINTS = {
     DETAIL: (id: string) => `/songs/${id}`,
     PLAY: (id: string) => `/songs/${id}/play`,
     STREAM: (id: string) => `/songs/stream/${id}`,
+    LYRICS: (id: string) => `/songs/${id}/lyrics`,
   },
 
   // artists endpoint

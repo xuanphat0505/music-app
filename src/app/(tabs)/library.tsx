@@ -4,6 +4,7 @@ import {
   ScrollView,
   StatusBar,
   Alert,
+  ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
@@ -19,7 +20,7 @@ import {
 } from "@/components/library";
 import { usePlayerStore } from "@/store/playerStore";
 import { Playlist, Track } from "@/types";
-import { MOCK_ALL_TRACKS } from "@/constants/MockData";
+import { useSongs } from "@/hooks/useSongs";
 
 // Danh sách danh sách phát mẫu với ảnh bìa ghép 2x2 chất lượng cao
 const MOCK_PLAYLISTS: Playlist[] = [
@@ -56,6 +57,7 @@ export default function LibraryScreen() {
     "playlists",
   );
   const [addedSongs, setAddedSongs] = useState<string[]>(["s1", "s3", "s5"]);
+  const { songs: allTracks, isLoading: isLoadingSongs } = useSongs({});
 
   // Hàm kích hoạt rung phản hồi xúc giác nhẹ khi tương tác
   const triggerHaptic = () => {
@@ -165,8 +167,8 @@ export default function LibraryScreen() {
         <LibrarySubHeader
           activeTab={activeTab}
           playlistsCount={playlists.length}
-          songsCount={MOCK_ALL_TRACKS.length}
-          tracks={MOCK_ALL_TRACKS}
+          songsCount={allTracks.length}
+          tracks={allTracks}
           playTrack={playTrack}
           triggerHaptic={triggerHaptic}
         />
@@ -179,9 +181,11 @@ export default function LibraryScreen() {
             onLongPressPlaylist={handleLongPressPlaylist}
             onAddPlaylistPress={() => setIsCreateModalVisible(true)}
           />
+        ) : isLoadingSongs ? (
+          <ActivityIndicator size="small" color={COLORS.PRIMARY} style={{ marginTop: 40 }} />
         ) : (
           <SongsList
-            songs={MOCK_ALL_TRACKS}
+            songs={allTracks}
             addedSongs={addedSongs}
             onPlaySong={handlePlaySong}
             onToggleAddSong={handleToggleAddSong}

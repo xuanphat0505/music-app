@@ -39,7 +39,7 @@ export class AudioService {
   // Hàm khởi tạo đăng ký theo dõi trạng thái thay đổi bài hát từ store để điều phối phát nhạc
   private constructor() {
     let lastTrackId: string | null = null;
-    let lastAudiusId: string | null = null;
+    let lastSpotifyId: string | null = null;
     let lastIsPlaying = false;
     let hasTrack = false;
 
@@ -50,12 +50,12 @@ export class AudioService {
       const trackChanged = currentTrack && (
         !hasTrack ||
         (currentTrack._id !== undefined && currentTrack._id !== lastTrackId) ||
-        (currentTrack.audiusId !== undefined && currentTrack.audiusId !== lastAudiusId)
+        (currentTrack.spotifyId !== undefined && currentTrack.spotifyId !== lastSpotifyId)
       );
 
       if (currentTrack && trackChanged) {
         lastTrackId = currentTrack._id || null;
-        lastAudiusId = currentTrack.audiusId || null;
+        lastSpotifyId = currentTrack.spotifyId || null;
         lastIsPlaying = isPlaying;
         hasTrack = true;
         this.loadAndPlay(currentTrack).catch(() => {});
@@ -64,7 +64,7 @@ export class AudioService {
         this.syncPlayState(isPlaying).catch(() => {});
       } else if (!currentTrack && hasTrack) {
         lastTrackId = null;
-        lastAudiusId = null;
+        lastSpotifyId = null;
         lastIsPlaying = false;
         hasTrack = false;
         this.stop().catch(() => {});
@@ -108,7 +108,7 @@ export class AudioService {
       }
 
       const token = getAccessToken();
-      const streamUri = `${BASE_URL}/songs/stream/${track.audiusId}`;
+      const streamUri = `${BASE_URL}/songs/stream/${track.youtubeVideoId || track.spotifyId}`;
 
       const player = createAudioPlayer(
         {
@@ -130,7 +130,8 @@ export class AudioService {
       player.play();
 
       musicApi.playSong(track._id!).catch(() => {});
-    } catch {
+    } catch (error) {
+      console.error("[AudioService] Lỗi khi loadAndPlay:", error);
       const { setIsBuffering } = usePlayerStore.getState();
       setIsBuffering(false);
     }

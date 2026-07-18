@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { musicApi } from "@/apis/musicApi";
 
 // Hook lấy danh sách các album có phân trang và tìm kiếm
-export const useAlbums = (q?: string) => {
+export const useAlbums = (q?: string, enabled = true) => {
   const [albums, setAlbums] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -39,8 +39,12 @@ export const useAlbums = (q?: string) => {
   }, [q]);
 
   useEffect(() => {
-    fetchAlbums(1, false);
-  }, [fetchAlbums]);
+    if (enabled) {
+      fetchAlbums(1, false);
+    } else {
+      setAlbums([]);
+    }
+  }, [fetchAlbums, enabled]);
 
   // Cuộn trang để tải thêm album
   const loadMore = useCallback(() => {

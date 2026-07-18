@@ -6,8 +6,9 @@ export const useSongs = (filters: {
   genre?: string;
   q?: string;
   sort?: string;
+  enabled?: boolean;
 }) => {
-  const { genre, q, sort } = filters;
+  const { genre, q, sort, enabled = true } = filters;
   const [songs, setSongs] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -51,8 +52,12 @@ export const useSongs = (filters: {
 
   // Tự động tải lại trang đầu mỗi khi các bộ lọc thay đổi
   useEffect(() => {
-    fetchSongs(1, false);
-  }, [fetchSongs]);
+    if (enabled) {
+      fetchSongs(1, false);
+    } else {
+      setSongs([]);
+    }
+  }, [fetchSongs, enabled]);
 
   // Tải trang tiếp theo khi người dùng cuộn xuống dưới
   const loadMore = useCallback(() => {

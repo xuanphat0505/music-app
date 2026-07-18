@@ -51,3 +51,13 @@ export interface Category {
   colors: [string, string];
   coverUrl: string;
 }
+
+// Thực thể lịch sử tìm kiếm gần đây
+export interface RecentSearchEntity {
+  id: string;
+  type: "song" | "artist" | "album";
+  title: string;
+  subtitle: string;
+  imageUrl: string;
+  data: any;
+}

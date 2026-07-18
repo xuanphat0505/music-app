@@ -1,18 +1,31 @@
-import { TouchableOpacity, Text, View, StyleSheet } from "react-native";
+import { TouchableOpacity, Text, View, StyleSheet, Image } from "react-native";
 import { COLORS } from "@/constants/Colors";
-import React from "react";
+import { PLACEHOLDER_IMAGES } from "@/constants/Images";
+import React, { useState } from "react";
+import { RecentSearchEntity } from "@/types";
+import { Feather } from "@expo/vector-icons";
 
 interface RecentSearchProps {
-  recentSearches: string[];
+  recentSearches: RecentSearchEntity[];
   handleClearAll: () => void;
-  handleSelectRecent: (term: string) => void;
+  handleSelectRecent: (item: RecentSearchEntity) => void;
+  handleRemoveOne: (id: string) => void;
 }
 
 export const RecentSearch: React.FC<RecentSearchProps> = ({
-  recentSearches,
+  recentSearches = [],
   handleClearAll,
   handleSelectRecent,
+  handleRemoveOne,
 }: RecentSearchProps) => {
+  const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
+
+  const getFallbackCover = (type: "song" | "artist" | "album") => {
+    if (type === "artist") return PLACEHOLDER_IMAGES.ARTIST;
+    if (type === "album") return PLACEHOLDER_IMAGES.ALBUM;
+    return PLACEHOLDER_IMAGES.SONG;
+  };
+
   return (
     <View style={styles.section}>
       <View style={styles.sectionHeader}>
@@ -22,16 +35,50 @@ export const RecentSearch: React.FC<RecentSearchProps> = ({
         </TouchableOpacity>
       </View>
       <View style={styles.recentList}>
-        {recentSearches.map((term, index) => (
-          <TouchableOpacity
-            key={index}
-            style={styles.recentPill}
-            activeOpacity={0.8}
-            onPress={() => handleSelectRecent(term)}
-          >
-            <Text style={styles.recentPillText}>{term}</Text>
-          </TouchableOpacity>
-        ))}
+        {recentSearches.map((item) => {
+          const hasError = imageErrors[item.id];
+          const imageUri =
+            item.imageUrl && item.imageUrl.trim() !== "" && !hasError
+              ? item.imageUrl
+              : getFallbackCover(item.type);
+
+          const isArtist = item.type === "artist";
+
+          return (
+            <View key={item.id} style={styles.recentItemWrapper}>
+              <TouchableOpacity
+                style={styles.clickableArea}
+                activeOpacity={0.7}
+                onPress={() => handleSelectRecent(item)}
+              >
+                <Image
+                  source={{ uri: imageUri }}
+                  style={[
+                    styles.cover,
+                    isArtist ? styles.circularCover : styles.roundedCover,
+                  ]}
+                  onError={() => setImageErrors((prev) => ({ ...prev, [item.id]: true }))}
+                />
+                <View style={styles.infoContainer}>
+                  <Text style={styles.title} numberOfLines={1}>
+                    {item.title}
+                  </Text>
+                  <Text style={styles.subtitle} numberOfLines={1}>
+                    {item.subtitle}
+                  </Text>
+                </View>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.removeButton}
+                activeOpacity={0.7}
+                onPress={() => handleRemoveOne(item.id)}
+              >
+                <Feather name="x" size={18} color={COLORS.TEXT_SECONDARY} />
+              </TouchableOpacity>
+            </View>
+          );
+        })}
       </View>
     </View>
   );
@@ -46,20 +93,13 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 12,
+    marginBottom: 16,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: "700",
     color: COLORS.TEXT_PRIMARY,
     fontFamily: "Outfit",
-  },
-  sectionTitleBrowse: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: COLORS.TEXT_PRIMARY,
-    fontFamily: "Outfit",
-    marginBottom: 16,
   },
   clearAllButton: {
     fontSize: 11,
@@ -69,23 +109,55 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   recentList: {
+    gap: 12,
+  },
+  recentItemWrapper: {
     flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-    marginBottom: 8,
-  },
-  recentPill: {
-    backgroundColor: COLORS.SURFACE,
-    borderRadius: 16,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: "rgba(255, 255, 255, 0.02)",
+    padding: 10,
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: COLORS.GLASS_BORDER,
+    borderColor: "rgba(255, 255, 255, 0.04)",
   },
-  recentPillText: {
+  clickableArea: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  cover: {
+    width: 48,
+    height: 48,
+    backgroundColor: COLORS.SURFACE,
+  },
+  circularCover: {
+    borderRadius: 24,
+  },
+  roundedCover: {
+    borderRadius: 8,
+  },
+  infoContainer: {
+    flex: 1,
+    justifyContent: "center",
+  },
+  title: {
+    fontSize: 14,
+    fontWeight: "700",
     color: COLORS.TEXT_PRIMARY,
-    fontSize: 12,
+    fontFamily: "Outfit",
+    marginBottom: 2,
+  },
+  subtitle: {
+    fontSize: 11,
+    color: COLORS.TEXT_SECONDARY,
     fontFamily: "Inter",
-    fontWeight: "500",
+  },
+  removeButton: {
+    padding: 8,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
+export default RecentSearch;

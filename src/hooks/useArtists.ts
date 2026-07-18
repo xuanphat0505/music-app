@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { musicApi } from "@/apis/musicApi";
 
 // Hook lấy danh sách nghệ sĩ có phân trang và tìm kiếm
-export const useArtists = (q?: string) => {
+export const useArtists = (q?: string, enabled = true) => {
   const [artists, setArtists] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -42,8 +42,12 @@ export const useArtists = (q?: string) => {
   );
 
   useEffect(() => {
-    fetchArtists(1, false);
-  }, [fetchArtists]);
+    if (enabled) {
+      fetchArtists(1, false);
+    } else {
+      setArtists([]);
+    }
+  }, [fetchArtists, enabled]);
 
   // Tải thêm nghệ sĩ khi cuộn trang
   const loadMore = useCallback(() => {

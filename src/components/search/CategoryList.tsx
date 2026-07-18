@@ -1,4 +1,4 @@
-import { LinearGradient } from "expo-linear-gradient";
+import React, { useState } from "react";
 import {
   Dimensions,
   Image,
@@ -7,8 +7,9 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 import { COLORS } from "@/constants/Colors";
-import React from "react";
+import { PLACEHOLDER_IMAGES } from "@/constants/Images";
 import { Category } from "@/types";
 
 interface CategoryListProps {
@@ -16,6 +17,35 @@ interface CategoryListProps {
   onSelectCategory: (category: Category) => void;
 }
 
+// Tách riêng item để quản lý state hình ảnh bị lỗi độc lập
+const CategoryCardItem: React.FC<{
+  category: Category;
+  onSelectCategory: (category: Category) => void;
+}> = ({ category, onSelectCategory }) => {
+  const [imgUri, setImgUri] = useState(category.coverUrl);
+
+  return (
+    <TouchableOpacity
+      activeOpacity={0.9}
+      style={styles.categoryCardWrapper}
+      onPress={() => onSelectCategory(category)}
+    >
+      <LinearGradient
+        colors={category.colors}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.categoryCard}
+      >
+        <Text style={styles.categoryTitle}>{category.title}</Text>
+        <Image
+          source={{ uri: imgUri || PLACEHOLDER_IMAGES.GENRE }}
+          style={styles.coverImage}
+          onError={() => setImgUri(PLACEHOLDER_IMAGES.GENRE)}
+        />
+      </LinearGradient>
+    </TouchableOpacity>
+  );
+};
 
 export const CategoryList: React.FC<CategoryListProps> = ({
   categories,
@@ -26,25 +56,11 @@ export const CategoryList: React.FC<CategoryListProps> = ({
       <Text style={styles.sectionTitleBrowse}>Browse Categories</Text>
       <View style={styles.categoryGrid}>
         {categories.map((category) => (
-          <TouchableOpacity
+          <CategoryCardItem
             key={category._id}
-            activeOpacity={0.9}
-            style={styles.categoryCardWrapper}
-            onPress={() => onSelectCategory(category)}
-          >
-            <LinearGradient
-              colors={category.colors}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.categoryCard}
-            >
-              <Text style={styles.categoryTitle}>{category.title}</Text>
-              <Image
-                source={{ uri: category.coverUrl }}
-                style={styles.coverImage}
-              />
-            </LinearGradient>
-          </TouchableOpacity>
+            category={category}
+            onSelectCategory={onSelectCategory}
+          />
         ))}
       </View>
     </View>

@@ -1,7 +1,13 @@
-import React, { useState } from "react";
-import { StyleSheet, ScrollView, StatusBar } from "react-native";
+import React, { useState, useEffect } from "react";
+import {
+  StyleSheet,
+  ScrollView,
+  StatusBar,
+  ActivityIndicator,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
+import { useIsFocused } from "@react-navigation/native";
 
 import { COLORS } from "@/constants/Colors";
 import { Header } from "@/components/common";
@@ -13,87 +19,54 @@ import {
   CategoryDetail,
   VoiceSearchOverlay,
 } from "@/components/search";
-import { useSongs } from "@/hooks/useSongs";
-import { Category } from "@/types";
-
-// Danh sách thể loại nhạc giả lập với màu gradient và hình ảnh
-const CATEGORIES: Category[] = [
-  {
-    _id: "c1",
-    title: "Pop",
-    colors: ["#ff5a14", "#ff8f59"] as [string, string],
-    coverUrl:
-      "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=150&auto=format&fit=crop",
-  },
-  {
-    _id: "c2",
-    title: "Rock",
-    colors: ["#4d44b5", "#6b5ce7"] as [string, string],
-    coverUrl:
-      "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=150&auto=format&fit=crop",
-  },
-  {
-    _id: "c3",
-    title: "EDM",
-    colors: ["#00e5c9", "#00b39d"] as [string, string],
-    coverUrl:
-      "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=150&auto=format&fit=crop",
-  },
-  {
-    _id: "c4",
-    title: "Jazz",
-    colors: ["#ff5a14", "#4d44b5"] as [string, string],
-    coverUrl:
-      "https://images.unsplash.com/photo-1511192336575-5a79af67a629?q=80&w=150&auto=format&fit=crop",
-  },
-  {
-    _id: "c5",
-    title: "Hip Hop",
-    colors: ["#4d44b5", "#00e5c9"] as [string, string],
-    coverUrl:
-      "https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?q=80&w=150&auto=format&fit=crop",
-  },
-  {
-    _id: "c6",
-    title: "Indie",
-    colors: ["#18181c", "#2c2c35"] as [string, string],
-    coverUrl:
-      "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?q=80&w=150&auto=format&fit=crop",
-  },
-];
+import { useSongs, useGenresCount } from "@/hooks/useSongs";
+import { useArtists } from "@/hooks/useArtists";
+import { useAlbums } from "@/hooks/useAlbums";
+import { usePlayerStore } from "@/store/playerStore";
+import { useRecentSearches } from "@/hooks/useRecentSearches";
+import { getGenreStyle } from "@/utils/genre";
+import { Category, RecentSearchEntity } from "@/types";
 
 // Màn hình Tìm kiếm hỗ trợ người dùng lọc tìm các bài hát, ca sĩ, album và khám phá danh mục nhạc
 export default function SearchScreen() {
+  const isFocused = useIsFocused();
+  const playTrack = usePlayerStore((state) => state.playTrack);
+  const [randomCategories, setRandomCategories] = useState<Category[]>([]);
+  const {
+    recentSearches,
+    saveRecentSearch,
+    removeRecentSearch,
+    clearRecentSearches,
+  } = useRecentSearches();
+
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(
-    null
+    null,
   );
   const [isVoiceActive, setIsVoiceActive] = useState(false);
-  const [recentSearches, setRecentSearches] = useState<string[]>([
-    "Post Malone",
-    "Lofi Beats",
-    "Midnight City",
-    "Daft Punk",
-  ]);
 
-  // Hàm xử lý lưu từ khóa mới vào lịch sử tìm kiếm khi người dùng nhấn nút tìm kiếm
+  // Hàm xử lý lưu từ khóa mới vào lịch sử khi nhấn nút tìm kiếm
   const handleSearchSubmit = () => {
     if (!searchQuery.trim()) return;
     const term = searchQuery.trim();
-    const filtered = recentSearches.filter((item) => item !== term);
-    setRecentSearches([term, ...filtered]);
+    saveRecentSearch({
+      id: `query-${term}`,
+      type: "song",
+      title: term,
+      subtitle: "Search Query",
+      imageUrl: "",
+      data: null,
+    });
   };
 
-  // Hàm xóa toàn bộ từ khóa trong lịch sử tìm kiếm gần đây
-  const handleClearAll = () => {
+  // Hàm xử lý khi nhấn chọn một mục lịch sử tìm kiếm gần đây
+  const handleSelectRecent = (item: RecentSearchEntity) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
-    setRecentSearches([]);
-  };
-
-  // Hàm điền nhanh từ khóa lịch sử đã chọn lên ô tìm kiếm để thực hiện truy vấn
-  const handleSelectRecent = (term: string) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
-    setSearchQuery(term);
+    if (item.type === "song" && item.data) {
+      playTrack(item.data);
+    } else {
+      setSearchQuery(item.title);
+    }
   };
 
   // Hàm xóa nội dung ô tìm kiếm hiện tại để quay về trạng thái khám phá ban đầu
@@ -107,9 +80,48 @@ export default function SearchScreen() {
     setIsVoiceActive(false);
     setSearchQuery(result);
   };
+  // Lấy danh sách thể loại nhạc động từ cơ sở dữ liệu
+  const { genres, isLoading: isGenresLoading } = useGenresCount();
+
+  // Trộn ngẫu nhiên danh mục nhạc và giới hạn hiển thị tối đa 5 phần tử mỗi khi màn hình được truy cập hoặc dữ liệu thay đổi
+  useEffect(() => {
+    if (isFocused && genres && genres.length > 0) {
+      const shuffled = [...genres]
+        .sort(() => 0.5 - Math.random())
+        .slice(0, 5)
+        .map((item: { genre: string; count: number }, index: number) => {
+          const style = getGenreStyle(item.genre);
+          return {
+            _id: `g-${index}`,
+            title: item.genre,
+            colors: style.colors,
+            coverUrl: style.coverUrl,
+          };
+        });
+      setRandomCategories(shuffled);
+    }
+  }, [isFocused, genres]);
+  const isSearchActive = searchQuery.trim() !== "";
 
   // Gọi API lấy kết quả tìm kiếm bài hát theo từ khóa
-  const { songs: searchResults, isLoading } = useSongs({ q: searchQuery });
+  const { songs: searchSongs, isLoading: isSongsLoading } = useSongs({
+    q: searchQuery,
+    enabled: isSearchActive,
+  });
+
+  // Gọi API lấy kết quả tìm kiếm nghệ sĩ theo từ khóa
+  const { artists: searchArtists, isLoading: isArtistsLoading } = useArtists(
+    searchQuery,
+    isSearchActive,
+  );
+
+  // Gọi API lấy kết quả tìm kiếm album theo từ khóa
+  const { albums: searchAlbums, isLoading: isAlbumsLoading } = useAlbums(
+    searchQuery,
+    isSearchActive,
+  );
+
+  const isSearchLoading = isSongsLoading || isArtistsLoading || isAlbumsLoading;
 
   return (
     <SafeAreaView style={styles.container}>
@@ -139,9 +151,12 @@ export default function SearchScreen() {
             {searchQuery ? (
               /* Giao diện hiển thị kết quả tìm kiếm */
               <SearchResults
-                results={searchResults}
+                songs={searchSongs}
+                artists={searchArtists}
+                albums={searchAlbums}
                 searchQuery={searchQuery}
-                isLoading={isLoading}
+                isLoading={isSearchLoading}
+                onItemSelect={saveRecentSearch}
               />
             ) : (
               <>
@@ -149,16 +164,25 @@ export default function SearchScreen() {
                 {recentSearches.length > 0 && (
                   <RecentSearch
                     recentSearches={recentSearches}
-                    handleClearAll={handleClearAll}
+                    handleClearAll={clearRecentSearches}
                     handleSelectRecent={handleSelectRecent}
+                    handleRemoveOne={removeRecentSearch}
                   />
                 )}
 
                 {/* Danh mục khám phá thể loại nhạc */}
-                <CategoryList
-                  categories={CATEGORIES}
-                  onSelectCategory={setSelectedCategory}
-                />
+                {isGenresLoading ? (
+                  <ActivityIndicator
+                    size="small"
+                    color={COLORS.PRIMARY}
+                    style={{ marginTop: 40 }}
+                  />
+                ) : (
+                  <CategoryList
+                    categories={randomCategories}
+                    onSelectCategory={setSelectedCategory}
+                  />
+                )}
               </>
             )}
           </ScrollView>

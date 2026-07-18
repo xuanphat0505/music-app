@@ -13,7 +13,7 @@ import {
   CategoryDetail,
   VoiceSearchOverlay,
 } from "@/components/search";
-import { MOCK_ALL_TRACKS } from "@/constants/MockData";
+import { useSongs } from "@/hooks/useSongs";
 import { Category } from "@/types";
 
 // Danh sách thể loại nhạc giả lập với màu gradient và hình ảnh
@@ -108,15 +108,8 @@ export default function SearchScreen() {
     setSearchQuery(result);
   };
 
-  // Lọc danh sách bài hát khớp với từ khóa tìm kiếm của người dùng
-  const searchResults = MOCK_ALL_TRACKS.filter((track) => {
-    const titleMatch = track.title.toLowerCase().includes(searchQuery.toLowerCase());
-    const artistName = typeof track.artist === "string"
-      ? track.artist
-      : track.artist?.name || "";
-    const artistMatch = artistName.toLowerCase().includes(searchQuery.toLowerCase());
-    return titleMatch || artistMatch;
-  });
+  // Gọi API lấy kết quả tìm kiếm bài hát theo từ khóa
+  const { songs: searchResults, isLoading } = useSongs({ q: searchQuery });
 
   return (
     <SafeAreaView style={styles.container}>
@@ -148,6 +141,7 @@ export default function SearchScreen() {
               <SearchResults
                 results={searchResults}
                 searchQuery={searchQuery}
+                isLoading={isLoading}
               />
             ) : (
               <>

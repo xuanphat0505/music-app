@@ -1,5 +1,5 @@
 import React from "react";
-import { StyleSheet, Text, View, Alert } from "react-native";
+import { StyleSheet, Text, View, Alert, ActivityIndicator } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { COLORS } from "@/constants/Colors";
 import { usePlayerStore } from "@/store/playerStore";
@@ -10,11 +10,13 @@ import { Track } from "@/types";
 interface SearchResultsProps {
   results: Track[];
   searchQuery: string;
+  isLoading?: boolean;
 }
 
 export const SearchResults: React.FC<SearchResultsProps> = ({
   results,
   searchQuery,
+  isLoading,
 }) => {
   const playTrack = usePlayerStore((state) => state.playTrack);
 
@@ -23,6 +25,14 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
     playTrack(track);
   };
+
+  if (isLoading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="small" color={COLORS.PRIMARY} />
+      </View>
+    );
+  }
 
   if (results.length === 0) {
     return (
@@ -104,5 +114,11 @@ const styles = StyleSheet.create({
     fontFamily: "Inter",
     textAlign: "center",
     lineHeight: 18,
+  },
+  loadingContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 60,
   },
 });

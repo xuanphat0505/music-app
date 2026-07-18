@@ -15,7 +15,7 @@ import { useAuth } from "@/hooks/useAuth";
 const MOCK_TOP_ARTISTS: Artist[] = [
   {
     _id: "a1",
-    audiusId: "audius-a1",
+    spotifyId: "spotify-a1",
     name: "LUN",
     username: "lun_music",
     avatar:
@@ -23,7 +23,7 @@ const MOCK_TOP_ARTISTS: Artist[] = [
   },
   {
     _id: "a2",
-    audiusId: "audius-a2",
+    spotifyId: "spotify-a2",
     name: "Pulse Engine",
     username: "pulse_engine",
     avatar:
@@ -31,7 +31,7 @@ const MOCK_TOP_ARTISTS: Artist[] = [
   },
   {
     _id: "a3",
-    audiusId: "audius-a3",
+    spotifyId: "spotify-a3",
     name: "Azure Dreams",
     username: "azure_dreams",
     avatar:
@@ -39,7 +39,7 @@ const MOCK_TOP_ARTISTS: Artist[] = [
   },
   {
     _id: "a4",
-    audiusId: "audius-a4",
+    spotifyId: "spotify-a4",
     name: "Orion",
     username: "orion_drift",
     avatar:

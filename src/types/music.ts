@@ -1,7 +1,7 @@
 // Thực thể nghệ sĩ (phản ánh đúng dữ liệu populate từ server)
 export interface Artist {
   _id: string;
-  audiusId: string;
+  spotifyId: string;
   name: string;
   username: string;
   avatar: string;
@@ -12,13 +12,14 @@ export interface Artist {
 // Thực thể bài hát (phản ánh đúng cấu trúc Song schema từ server MongoDB)
 export interface Track {
   _id: string;
-  audiusId: string;
+  spotifyId: string;
+  youtubeVideoId?: string;
   title: string;
   duration: number;
   artwork: string;
   genre?: string;
   playsCount: number;
-  audiusPlaysCount: number;
+  spotifyPlaysCount: number;
   artist: Artist | string;
   album?: any;
   streamUrl?: string;
@@ -35,7 +36,7 @@ export interface Playlist {
 // Thực thể album nhạc
 export interface Album {
   _id: string;
-  audiusId?: string;
+  spotifyId?: string;
   title: string;
   artist: Artist | string;
   genre?: string;

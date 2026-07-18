@@ -7,6 +7,7 @@ export const useSongs = (filters: {
   q?: string;
   sort?: string;
 }) => {
+  const { genre, q, sort } = filters;
   const [songs, setSongs] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -28,7 +29,9 @@ export const useSongs = (filters: {
         const response = await musicApi.getSongs({
           page: pageNum,
           limit: 10,
-          ...filters,
+          genre,
+          q,
+          sort,
         });
 
         const { data, meta } = response;
@@ -43,7 +46,7 @@ export const useSongs = (filters: {
         setIsLoadingMore(false);
       }
     },
-    [filters],
+    [genre, q, sort],
   );
 
   // Tự động tải lại trang đầu mỗi khi các bộ lọc thay đổi

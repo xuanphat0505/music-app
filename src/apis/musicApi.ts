@@ -29,7 +29,7 @@ export const musicApi = {
     return response.data;
   },
 
-  // Lấy chi tiết thông tin bài hát theo ID hoặc audiusId
+  // Lấy chi tiết thông tin bài hát theo ID hoặc spotifyId
   getSongDetail: async (id: string) => {
     const response: any = await apiClient.get(ENDPOINTS.SONGS.DETAIL(id));
     return response.data;
@@ -41,7 +41,7 @@ export const musicApi = {
     return response.data;
   },
 
-  // Lấy lời bài hát theo ID hoặc audiusId
+  // Lấy lời bài hát theo ID hoặc spotifyId
   getSongLyrics: async (id: string) => {
     const response: any = await apiClient.get(ENDPOINTS.SONGS.LYRICS(id));
     return response.data;

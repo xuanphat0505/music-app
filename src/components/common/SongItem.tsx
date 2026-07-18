@@ -32,10 +32,10 @@ export const SongItem: React.FC<SongItemProps> = ({
   isAdded = false,
 }) => {
   const currentTrack = usePlayerStore((state) => state.currentTrack);
-  // So sánh bài hát đang hoạt động bằng audiusId hoặc _id từ server
+  // So sánh bài hát đang hoạt động bằng spotifyId hoặc _id từ server
   const isActive = !!(
     currentTrack &&
-    (currentTrack._id === song._id || currentTrack.audiusId === song.audiusId)
+    (currentTrack._id === song._id || currentTrack.spotifyId === song.spotifyId)
   );
 
   const [imageError, setImageError] = React.useState(false);

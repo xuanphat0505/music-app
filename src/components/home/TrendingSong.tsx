@@ -24,7 +24,7 @@ export const TrendingSong: React.FC<TrendingSongProps> = ({ song }) => {
     ? song.artist
     : song.artist?.name || "";
 
-  const totalPlays = (song.playsCount || 0) + (song.audiusPlaysCount || 0);
+  const totalPlays = (song.playsCount || 0) + (song.spotifyPlaysCount || 0);
   const playsText = formatPlays(totalPlays);
 
   return (

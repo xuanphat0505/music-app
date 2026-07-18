@@ -7,12 +7,13 @@ import {
   TouchableOpacity,
   ScrollView,
   Alert,
+  ActivityIndicator,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import * as Haptics from "expo-haptics";
 import { COLORS } from "@/constants/Colors";
-import { MOCK_ALL_TRACKS } from "@/constants/MockData";
+import { useSongs } from "@/hooks/useSongs";
 import { usePlayerStore } from "@/store/playerStore";
 import { SongItem } from "@/components/common";
 import { Category, Track } from "@/types";
@@ -29,10 +30,10 @@ export const CategoryDetail: React.FC<CategoryDetailProps> = ({
 }) => {
   const playTrack = usePlayerStore((state) => state.playTrack);
 
-  // Lọc danh sách bài hát thuộc thể loại nhạc này từ danh sách giả lập
-  const filteredSongs = MOCK_ALL_TRACKS.filter(
-    (song) => song.genre?.toLowerCase() === category.title.toLowerCase(),
-  );
+  // Lấy danh sách bài hát thuộc thể loại nhạc từ API thực tế
+  const { songs: filteredSongs, isLoading } = useSongs({
+    genre: category.title,
+  });
 
   // Hàm xử lý phát nhạc và phản hồi rung khi chạm chọn bài hát trong danh mục
   const handlePlaySong = (track: Track) => {
@@ -74,7 +75,9 @@ export const CategoryDetail: React.FC<CategoryDetailProps> = ({
         contentContainerStyle={styles.scrollList}
       >
         <Text style={styles.sectionTitle}>Popular Tracks</Text>
-        {filteredSongs.length > 0 ? (
+        {isLoading ? (
+          <ActivityIndicator size="small" color={COLORS.PRIMARY} style={{ marginVertical: 20 }} />
+        ) : filteredSongs.length > 0 ? (
           filteredSongs.map((song) => {
             return (
               <SongItem

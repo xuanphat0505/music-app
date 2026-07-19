@@ -22,8 +22,9 @@ import {
 import { useSongs, useGenresCount } from "@/hooks/useSongs";
 import { useArtists } from "@/hooks/useArtists";
 import { useAlbums } from "@/hooks/useAlbums";
-import { usePlayerStore } from "@/store/playerStore";
 import { useRecentSearches } from "@/hooks/useRecentSearches";
+import { useDebounce } from "@/hooks/useDebounce";
+import { usePlayerStore } from "@/store/playerStore";
 import { getGenreStyle } from "@/utils/genre";
 import { Category, RecentSearchEntity } from "@/types";
 
@@ -101,27 +102,52 @@ export default function SearchScreen() {
       setRandomCategories(shuffled);
     }
   }, [isFocused, genres]);
-  const isSearchActive = searchQuery.trim() !== "";
+  // Sử dụng debounce để trì hoãn từ khóa truyền vào API
+  const debouncedSearchQuery = useDebounce(searchQuery, 500);
+  const isSearchActive = debouncedSearchQuery.trim() !== "";
 
   // Gọi API lấy kết quả tìm kiếm bài hát theo từ khóa
   const { songs: searchSongs, isLoading: isSongsLoading } = useSongs({
-    q: searchQuery,
+    q: debouncedSearchQuery,
     enabled: isSearchActive,
   });
 
   // Gọi API lấy kết quả tìm kiếm nghệ sĩ theo từ khóa
   const { artists: searchArtists, isLoading: isArtistsLoading } = useArtists(
-    searchQuery,
+    debouncedSearchQuery,
     isSearchActive,
   );
 
   // Gọi API lấy kết quả tìm kiếm album theo từ khóa
   const { albums: searchAlbums, isLoading: isAlbumsLoading } = useAlbums(
-    searchQuery,
+    debouncedSearchQuery,
     isSearchActive,
   );
 
   const isSearchLoading = isSongsLoading || isArtistsLoading || isAlbumsLoading;
+
+  const [lastLoadedQuery, setLastLoadedQuery] = useState("");
+
+  // Lưu lại từ khóa tìm kiếm gần nhất đã tải dữ liệu thành công từ server
+  useEffect(() => {
+    if (!isSearchLoading && isSearchActive) {
+      setLastLoadedQuery(debouncedSearchQuery);
+    }
+  }, [isSearchLoading, debouncedSearchQuery, isSearchActive]);
+
+  // Xóa từ khóa đã tải thành công khi người dùng xóa ô nhập liệu tìm kiếm
+  useEffect(() => {
+    if (!searchQuery) {
+      setLastLoadedQuery("");
+    }
+  }, [searchQuery]);
+
+  // Trạng thái đang tìm kiếm
+  const isSearching =
+    searchQuery.trim() !== "" &&
+    (searchQuery.trim() !== debouncedSearchQuery.trim() ||
+      isSearchLoading ||
+      lastLoadedQuery !== debouncedSearchQuery);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -155,7 +181,7 @@ export default function SearchScreen() {
                 artists={searchArtists}
                 albums={searchAlbums}
                 searchQuery={searchQuery}
-                isLoading={isSearchLoading}
+                isLoading={isSearching}
                 onItemSelect={saveRecentSearch}
               />
             ) : (

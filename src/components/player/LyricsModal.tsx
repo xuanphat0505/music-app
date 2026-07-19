@@ -13,6 +13,7 @@ import * as Haptics from "expo-haptics";
 import { COLORS } from "@/constants/Colors";
 import { usePlayerStore } from "@/store/playerStore";
 import { LyricsView } from "./LyricsView";
+import { formatArtistNames } from "@/utils/artist";
 
 interface LyricsModalProps {
   visible: boolean;
@@ -59,9 +60,7 @@ export const LyricsModal: React.FC<LyricsModalProps> = ({ visible, onClose }) =>
                 {currentTrack.title}
               </Text>
               <Text style={styles.songArtist} numberOfLines={1}>
-                {typeof currentTrack.artist === "string"
-                  ? currentTrack.artist
-                  : currentTrack.artist?.name}
+                {formatArtistNames(currentTrack.artists)}
               </Text>
             </View>
 

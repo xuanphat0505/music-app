@@ -11,6 +11,7 @@ import { Feather } from "@expo/vector-icons";
 import { COLORS } from "@/constants/Colors";
 import { GlassView } from "../common";
 import { usePlayerStore } from "@/store/playerStore";
+import { formatArtistNames } from "@/utils/artist";
 
 // Thành phần trình phát nhạc thu nhỏ thiết kế theo phong cách Caziq frosted glass
 export const MiniPlayer: React.FC = () => {
@@ -45,9 +46,7 @@ export const MiniPlayer: React.FC = () => {
                 {currentTrack.title}
               </Text>
               <Text style={styles.subtitle} numberOfLines={1}>
-                {typeof currentTrack.artist === "string"
-                  ? currentTrack.artist
-                  : currentTrack.artist?.name}
+                {formatArtistNames(currentTrack.artists)}
               </Text>
             </View>
           </TouchableOpacity>

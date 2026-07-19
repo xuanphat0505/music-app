@@ -4,6 +4,7 @@ import { SongItem } from "../common";
 import { usePlayerStore } from "@/store/playerStore";
 import { Track } from "@/types";
 import * as Haptics from "expo-haptics";
+import { formatArtistNames } from "@/utils/artist";
 
 // Hàm định dạng số lượt nghe thành cỗi ngắn gọn (ví dụ: 1500 -> 1.5K)
 const formatPlays = (count: number): string => {
@@ -20,9 +21,7 @@ interface TrendingSongProps {
 export const TrendingSong: React.FC<TrendingSongProps> = ({ song }) => {
   const playTrack = usePlayerStore((state) => state.playTrack);
 
-  const artistName = typeof song.artist === "string"
-    ? song.artist
-    : song.artist?.name || "";
+  const artistName = formatArtistNames(song.artists);
 
   const totalPlays = (song.playsCount || 0) + (song.spotifyPlaysCount || 0);
   const playsText = formatPlays(totalPlays);

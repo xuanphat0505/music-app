@@ -2,6 +2,7 @@ import React from "react";
 import { StyleSheet, View } from "react-native";
 import { SongItem } from "../common";
 import { Track } from "@/types";
+import { formatArtistNames } from "@/utils/artist";
 
 interface SongsListProps {
   songs: Track[];
@@ -23,7 +24,7 @@ export const SongsList: React.FC<SongsListProps> = ({
         <SongItem
           key={song._id}
           song={song}
-          subtitle={`${song.artist}`}
+          subtitle={formatArtistNames(song.artists)}
           duration={song.duration}
           isAdded={addedSongs.includes(song._id)}
           onPress={() => onPlaySong(song)}

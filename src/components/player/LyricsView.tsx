@@ -12,10 +12,13 @@ import * as Haptics from "expo-haptics";
 
 import { COLORS } from "@/constants/Colors";
 import { usePlayerStore } from "@/store/playerStore";
-import { parseLrc, LrcLine } from "@/utils/lrcParser";
+import { parseLrc } from "@/utils/lrcParser";
 import { AudioService } from "@/services/audioService";
 
-// Component hiển thị danh sách lời bài hát cuộn đồng bộ Karaoke hoặc tĩnh
+// Khoảng bù trừ thời gian mili-giây giúp khớp lời với tiếng chính xác hơn
+const LYRICS_OFFSET_MS = 350;
+
+// Component hiển thị danh sách lời bài hát tương tác dạng bản ghi có mốc thời gian
 export const LyricsView: React.FC = () => {
   const {
     currentTrack,
@@ -26,44 +29,40 @@ export const LyricsView: React.FC = () => {
     fetchLyrics,
   } = usePlayerStore();
 
-  const flatListRef = useRef<FlatList<LrcLine>>(null);
+  const flatListRef = useRef<FlatList>(null);
 
-  // Tự động gọi API lấy lyrics nếu chưa có trong cache store
+  // Tự động gọi API lấy lyrics nếu chưa có sẵn trong store
   useEffect(() => {
     if (currentTrack && !currentLyrics && !isLyricsLoading) {
       fetchLyrics(currentTrack._id).catch(() => {});
     }
   }, [currentTrack, currentLyrics, isLyricsLoading, fetchLyrics]);
 
-  // Phân tích cú pháp chuỗi LRC thô sang mảng đối tượng câu hát
+  // Phân tích cú pháp chuỗi LRC thô sang mảng đối tượng câu hát kèm mốc thời gian
   const parsedLines = useMemo(() => {
     return currentLyrics?.syncedLyrics ? parseLrc(currentLyrics.syncedLyrics) : [];
   }, [currentLyrics?.syncedLyrics]);
 
-  // Xác định dòng lời bài hát đang được phát tại thời điểm hiện tại
-  const progressMs = progress * 1000;
+  // Xác định dòng lyrics hiện tại dựa theo tiến trình thời gian nhạc thực tế
   const activeIndex = useMemo(() => {
     if (parsedLines.length === 0) return -1;
+    const ms = progress * 1000 + LYRICS_OFFSET_MS;
     return parsedLines.findIndex((line, index) => {
       const nextLine = parsedLines[index + 1];
-      return progressMs >= line.time && (!nextLine || progressMs < nextLine.time);
+      return ms >= line.time && (!nextLine || ms < nextLine.time);
     });
-  }, [parsedLines, progressMs]);
+  }, [progress, parsedLines]);
 
-  // Tự động cuộn dòng lời hát đang phát vào chính giữa vùng hiển thị
+  // Tự động cuộn mượt mà đến câu hát hiện tại mỗi khi activeIndex thay đổi
   useEffect(() => {
-    if (activeIndex >= 0 && flatListRef.current) {
-      try {
-        flatListRef.current.scrollToIndex({
-          index: activeIndex,
-          viewPosition: 0.3, // Định vị dòng hát ở vị trí 30% từ trên xuống
-          animated: true,
-        });
-      } catch {
-        // Bỏ qua lỗi cuộn khi danh sách chưa tải xong layout
-      }
+    if (activeIndex >= 0 && parsedLines.length > 0) {
+      flatListRef.current?.scrollToIndex({
+        index: activeIndex,
+        animated: true,
+        viewPosition: 0.3, // Đặt dòng active ở khoảng 1/3 chiều cao màn hình để tối ưu trải nghiệm đọc
+      });
     }
-  }, [activeIndex]);
+  }, [activeIndex, parsedLines.length]);
 
   // Xử lý tua nhạc tới vị trí thời gian của câu hát được chọn
   const handleLinePress = (timeMs: number) => {
@@ -71,6 +70,14 @@ export const LyricsView: React.FC = () => {
     setProgress(seconds);
     AudioService.getInstance().seekTo(seconds).catch(() => {});
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+  };
+
+  // Định dạng thời gian dạng mili-giây sang định dạng mm:ss để hiển thị trên nhãn thời gian
+  const formatTimeMs = (ms: number): string => {
+    const totalSeconds = Math.floor(ms / 1000);
+    const mins = Math.floor(totalSeconds / 60);
+    const secs = totalSeconds % 60;
+    return `${mins < 10 ? "0" : ""}${mins}:${secs < 10 ? "0" : ""}${secs}`;
   };
 
   // Trạng thái đang tải dữ liệu
@@ -83,7 +90,7 @@ export const LyricsView: React.FC = () => {
     );
   }
 
-  // Trạng thái không có bất kỳ dữ liệu lời bài hát nào
+  // Trạng thái không có dữ liệu lời bài hát nào
   if (!currentLyrics || (!currentLyrics.lyrics && !currentLyrics.syncedLyrics)) {
     return (
       <View style={styles.centerContainer}>
@@ -92,7 +99,7 @@ export const LyricsView: React.FC = () => {
     );
   }
 
-  // Trường hợp 1: Có lời bài hát đồng bộ (LRC Karaoke)
+  // Trường hợp có lời bài hát đồng bộ thời gian (Interactive Transcript)
   if (currentLyrics.syncedLyrics && parsedLines.length > 0) {
     return (
       <View style={styles.container}>
@@ -102,19 +109,12 @@ export const LyricsView: React.FC = () => {
           keyExtractor={(item) => item.id}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.listContent}
-          getItemLayout={(_, index) => ({
-            length: 65, // Ước lượng chiều cao của mỗi hàng lời bài hát
-            offset: 65 * index,
-            index,
-          })}
           onScrollToIndexFailed={(info) => {
-            // Xử lý khi cuộn thất bại do phần tử chưa kịp đo đạc layout
-            try {
-              flatListRef.current?.scrollToOffset({
-                offset: info.highestMeasuredFrameIndex * 65,
-                animated: true,
-              });
-            } catch {}
+            // Sử dụng scrollToOffset dựa trên ước lượng khoảng cách để tránh đệ quy vô hạn gây tràn call stack
+            flatListRef.current?.scrollToOffset({
+              offset: info.averageItemLength * info.index,
+              animated: false,
+            });
           }}
           renderItem={({ item, index }) => {
             const isActive = index === activeIndex;
@@ -124,14 +124,19 @@ export const LyricsView: React.FC = () => {
                 activeOpacity={0.7}
                 style={styles.lineTouch}
               >
-                <Text
-                  style={[
-                    styles.lyricLineText,
-                    isActive && styles.activeLineText,
-                  ]}
-                >
-                  {item.text}
-                </Text>
+                <View style={styles.lineContent}>
+                  <Text style={[styles.timeTag, isActive && styles.activeTimeTag]}>
+                    {formatTimeMs(item.time)}
+                  </Text>
+                  <Text
+                    style={[
+                      styles.lyricLineText,
+                      isActive && styles.activeLineText,
+                    ]}
+                  >
+                    {item.text}
+                  </Text>
+                </View>
               </TouchableOpacity>
             );
           }}
@@ -140,7 +145,7 @@ export const LyricsView: React.FC = () => {
     );
   }
 
-  // Trường hợp 2: Chỉ có lời bài hát dạng văn bản tĩnh (Plain Lyrics)
+  // Trường hợp chỉ có lời bài hát dạng văn bản tĩnh thông thường
   return (
     <ScrollView
       showsVerticalScrollIndicator={false}
@@ -174,7 +179,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   listContent: {
-    paddingVertical: 120, // Tạo khoảng trống ở đầu và cuối để dòng hát luôn ở trung tâm khi cuộn
+    paddingVertical: 24,
     paddingHorizontal: 24,
   },
   scrollContent: {
@@ -183,11 +188,29 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   lineTouch: {
-    minHeight: 65,
+    minHeight: 50,
     justifyContent: "center",
-    marginVertical: 4,
+    marginVertical: 6,
+  },
+  lineContent: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+  },
+  timeTag: {
+    width: 55,
+    color: "rgba(255, 255, 255, 0.3)",
+    fontSize: 14,
+    fontWeight: "500",
+    marginRight: 12,
+    fontFamily: "monospace",
+    paddingTop: 4,
+  },
+  activeTimeTag: {
+    color: COLORS.PRIMARY,
+    fontWeight: "700",
   },
   lyricLineText: {
+    flex: 1,
     color: "rgba(255, 255, 255, 0.4)",
     fontSize: 18,
     fontWeight: "600",
@@ -196,11 +219,11 @@ const styles = StyleSheet.create({
   },
   activeLineText: {
     color: "#FFFFFF",
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: "800",
     textShadowColor: "rgba(255, 255, 255, 0.3)",
     textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 8,
+    textShadowRadius: 6,
   },
   plainLyricsText: {
     color: "rgba(255, 255, 255, 0.8)",

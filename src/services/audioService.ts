@@ -1,4 +1,9 @@
-import { createAudioPlayer, AudioPlayer, setAudioModeAsync, AudioStatus } from "expo-audio";
+import {
+  createAudioPlayer,
+  AudioPlayer,
+  setAudioModeAsync,
+  AudioStatus,
+} from "expo-audio";
 import { Track } from "@/types";
 import { usePlayerStore } from "@/store/playerStore";
 import { getAccessToken } from "@/services/tokenService";
@@ -47,11 +52,13 @@ export class AudioService {
       const currentTrack = state.currentTrack;
       const isPlaying = state.isPlaying;
 
-      const trackChanged = currentTrack && (
-        !hasTrack ||
-        (currentTrack._id !== undefined && currentTrack._id !== lastTrackId) ||
-        (currentTrack.spotifyId !== undefined && currentTrack.spotifyId !== lastSpotifyId)
-      );
+      const trackChanged =
+        currentTrack &&
+        (!hasTrack ||
+          (currentTrack._id !== undefined &&
+            currentTrack._id !== lastTrackId) ||
+          (currentTrack.spotifyId !== undefined &&
+            currentTrack.spotifyId !== lastSpotifyId));
 
       if (currentTrack && trackChanged) {
         lastTrackId = currentTrack._id || null;
@@ -117,14 +124,14 @@ export class AudioService {
             Authorization: `Bearer ${token}`,
           },
         },
-        { updateInterval: 500 }
+        { updateInterval: 500 },
       );
 
       this.sound = player;
 
       this.statusSubscription = player.addListener(
         "playbackStatusUpdate",
-        this.onPlaybackStatusUpdate.bind(this)
+        this.onPlaybackStatusUpdate.bind(this),
       );
 
       player.play();
@@ -187,7 +194,8 @@ export class AudioService {
 
   // Nhận các thông tin cập nhật trạng thái hoạt động thực tế từ trình phát nhạc
   private onPlaybackStatusUpdate(status: AudioStatus) {
-    const { setProgress, setDuration, setIsBuffering } = usePlayerStore.getState();
+    const { setProgress, setDuration, setIsBuffering } =
+      usePlayerStore.getState();
 
     setIsBuffering(status.isBuffering);
 
@@ -210,7 +218,8 @@ export class AudioService {
 
   // Xử lý thiết lập lại trạng thái khi bài hát phát hết thời lượng
   private async handlePlaybackFinished() {
-    const { togglePlay, setProgress, setIsBuffering } = usePlayerStore.getState();
+    const { togglePlay, setProgress, setIsBuffering } =
+      usePlayerStore.getState();
     setIsBuffering(false);
     setProgress(0);
     togglePlay();

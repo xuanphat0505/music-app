@@ -15,6 +15,7 @@ import { SongItem } from "@/components/common/SongItem";
 import * as Haptics from "expo-haptics";
 import { Track, Artist, Album, RecentSearchEntity } from "@/types";
 import { FilterChips, ArtistResultItem, AlbumResultItem } from "./results";
+import { formatArtistNames } from "@/utils/artist";
 
 interface SearchResultsProps {
   songs: Track[];
@@ -47,8 +48,7 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
         id: track._id,
         type: "song",
         title: track.title,
-        subtitle:
-          typeof track.artist === "string" ? track.artist : track.artist?.name || "Unknown Artist",
+        subtitle: formatArtistNames(track.artists),
         imageUrl: track.artwork,
         data: track,
       });
@@ -92,7 +92,8 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
     setActiveTab(tab);
   };
-
+  console.log("artits", artists);
+  
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>

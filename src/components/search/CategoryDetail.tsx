@@ -17,6 +17,7 @@ import { useSongs } from "@/hooks/useSongs";
 import { usePlayerStore } from "@/store/playerStore";
 import { SongItem } from "@/components/common";
 import { Category, Track } from "@/types";
+import { formatArtistNames } from "@/utils/artist";
 
 interface CategoryDetailProps {
   category: Category;
@@ -83,11 +84,7 @@ export const CategoryDetail: React.FC<CategoryDetailProps> = ({
               <SongItem
                 key={song._id}
                 song={song}
-                subtitle={
-                  typeof song.artist === "string"
-                    ? song.artist
-                    : song.artist?.name
-                }
+                subtitle={formatArtistNames(song.artists)}
                 duration={song.duration}
                 onPress={() => handlePlaySong(song)}
                 onAddPress={() => {

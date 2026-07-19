@@ -12,6 +12,7 @@ import { Feather, Ionicons } from "@expo/vector-icons";
 import { COLORS } from "@/constants/Colors";
 import { usePlayerStore } from "@/store/playerStore";
 import { Track } from "@/types";
+import { formatArtistNames } from "@/utils/artist";
 
 // Hàm định dạng số giây sang dạng phút:giây (ví dụ: 3:45)
 const formatDuration = (sec: number | string) => {
@@ -74,10 +75,7 @@ export const SongItem: React.FC<SongItemProps> = ({
             {song.title}
           </Text>
           <Text style={styles.subtitle} numberOfLines={1}>
-            {subtitle ||
-              (typeof song.artist === "string"
-                ? song.artist
-                : song.artist?.name)}
+            {subtitle || formatArtistNames(song.artists)}
           </Text>
         </View>
       </TouchableOpacity>

@@ -20,6 +20,7 @@ import { COLORS } from "@/constants/Colors";
 import { usePlayerStore } from "@/store/playerStore";
 import { CDSpin, LyricsModal } from "@/components/player";
 import { AudioService } from "@/services/audioService";
+import { formatArtistNames } from "@/utils/artist";
 
 // Định dạng giây thành phút và giây
 const formatTime = (seconds: number) => {
@@ -171,9 +172,7 @@ export const FullPlayerModal: React.FC = () => {
               {currentTrack.title}
             </Text>
             <Text style={styles.trackArtist} numberOfLines={1}>
-              {typeof currentTrack.artist === "string"
-                ? currentTrack.artist
-                : currentTrack.artist?.name}
+              {formatArtistNames(currentTrack.artists)}
             </Text>
           </View>
 

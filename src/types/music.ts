@@ -20,7 +20,7 @@ export interface Track {
   genre?: string;
   playsCount: number;
   spotifyPlaysCount: number;
-  artist: Artist | string;
+  artists: (Artist | string)[];
   album?: any;
   streamUrl?: string;
 }

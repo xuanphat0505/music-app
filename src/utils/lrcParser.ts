@@ -6,14 +6,15 @@ export interface LrcLine {
 
 // Chuyển đổi chuỗi mốc thời gian dạng mm:ss.xx hoặc mm:ss:xx thành mili-giây
 const parseTimeToMs = (timeStr: string): number => {
-  const parts = timeStr.split(':');
+  // Chuẩn hóa dấu hai chấm cuối cùng thành dấu chấm để xử lý đồng nhất định dạng
+  const normalizedStr = timeStr.replace(/:(\d{2,3})$/, ".$1");
+  const parts = normalizedStr.split(":");
   
-  // Trường hợp định dạng mm:ss.xx
   if (parts.length === 2) {
     const minutes = parseInt(parts[0], 10);
-    const secondParts = parts[1].split('.');
+    const secondParts = parts[1].split(".");
     const seconds = parseInt(secondParts[0], 10);
-    const msStr = secondParts[1] || '0';
+    const msStr = secondParts[1] || "0";
     const ms = parseInt(msStr, 10) * (msStr.length === 2 ? 10 : 1);
     
     return minutes * 60 * 1000 + seconds * 1000 + ms;

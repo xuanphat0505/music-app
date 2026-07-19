@@ -295,7 +295,6 @@ export const FullPlayerModal: React.FC = () => {
           visible={showLyrics}
           onClose={() => setShowLyrics(false)}
         />
-
       </View>
     </Modal>
   );

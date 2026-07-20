@@ -24,6 +24,7 @@ interface SearchResultsProps {
   searchQuery: string;
   isLoading?: boolean;
   onItemSelect?: (item: RecentSearchEntity) => void;
+  onArtistSelect?: (artist: Artist) => void;
 }
 
 type TabType = "all" | "songs" | "artists" | "albums";
@@ -35,6 +36,7 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
   searchQuery,
   isLoading,
   onItemSelect,
+  onArtistSelect,
 }) => {
   const playTrack = usePlayerStore((state) => state.playTrack);
   const [activeTab, setActiveTab] = useState<TabType>("all");
@@ -68,7 +70,9 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
         data: artist,
       });
     }
-    Alert.alert("Artist Page", `Truy cập ca sĩ ${artist.name}`);
+    if (onArtistSelect) {
+      onArtistSelect(artist);
+    }
   };
 
   // Xử lý khi nhấn chọn album
@@ -92,7 +96,6 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
     setActiveTab(tab);
   };
-  console.log("artits", artists);
   
   if (isLoading) {
     return (

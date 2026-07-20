@@ -18,6 +18,7 @@ import {
   SearchResults,
   CategoryDetail,
   VoiceSearchOverlay,
+  ArtistDetail,
 } from "@/components/search";
 import { useSongs, useGenresCount } from "@/hooks/useSongs";
 import { useArtists } from "@/hooks/useArtists";
@@ -26,7 +27,7 @@ import { useRecentSearches } from "@/hooks/useRecentSearches";
 import { useDebounce } from "@/hooks/useDebounce";
 import { usePlayerStore } from "@/store/playerStore";
 import { getGenreStyle } from "@/utils/genre";
-import { Category, RecentSearchEntity } from "@/types";
+import { Category, RecentSearchEntity, Artist } from "@/types";
 
 // Màn hình Tìm kiếm hỗ trợ người dùng lọc tìm các bài hát, ca sĩ, album và khám phá danh mục nhạc
 export default function SearchScreen() {
@@ -44,6 +45,7 @@ export default function SearchScreen() {
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(
     null,
   );
+  const [selectedArtist, setSelectedArtist] = useState<Artist | null>(null);
   const [isVoiceActive, setIsVoiceActive] = useState(false);
 
   // Hàm xử lý lưu từ khóa mới vào lịch sử khi nhấn nút tìm kiếm
@@ -158,6 +160,11 @@ export default function SearchScreen() {
           category={selectedCategory}
           onBack={() => setSelectedCategory(null)}
         />
+      ) : selectedArtist ? (
+        <ArtistDetail
+          artist={selectedArtist}
+          onBack={() => setSelectedArtist(null)}
+        />
       ) : (
         <>
           <Header />
@@ -183,6 +190,7 @@ export default function SearchScreen() {
                 searchQuery={searchQuery}
                 isLoading={isSearching}
                 onItemSelect={saveRecentSearch}
+                onArtistSelect={setSelectedArtist}
               />
             ) : (
               <>

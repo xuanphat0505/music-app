@@ -6,7 +6,6 @@ import {
   Image,
   TouchableOpacity,
   ScrollView,
-  Alert,
   ActivityIndicator,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
@@ -14,6 +13,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import * as Haptics from "expo-haptics";
 import { COLORS } from "@/constants/Colors";
 import { useArtistDetail, useArtistSongs } from "@/hooks/useArtists";
+import { useLibrarySongs } from "@/hooks/useLibrarySongs";
 import { usePlayerStore } from "@/store/playerStore";
 import { SongItem } from "@/components/common";
 import { Artist, Track } from "@/types";
@@ -31,6 +31,7 @@ export const ArtistDetail: React.FC<ArtistDetailProps> = ({
 }) => {
   const playTrack = usePlayerStore((state) => state.playTrack);
   const [isFollowing, setIsFollowing] = useState(false);
+  const { isSongInLibrary, toggleSong } = useLibrarySongs();
 
   // Tải chi tiết nghệ sĩ nâng cao từ server
   const { artist: detail, isLoading: isDetailLoading } = useArtistDetail(artist._id);
@@ -58,6 +59,12 @@ export const ArtistDetail: React.FC<ArtistDetailProps> = ({
   const handleFollowToggle = () => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
     setIsFollowing(!isFollowing);
+  };
+
+  // Xử lý thêm bớt bài hát của nghệ sĩ vào thư viện cá nhân
+  const handleToggleLibrary = (song: Track) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+    toggleSong(song);
   };
 
   const isLoading = isDetailLoading || isSongsLoading;
@@ -168,14 +175,9 @@ export const ArtistDetail: React.FC<ArtistDetailProps> = ({
                   song={song}
                   subtitle={formatArtistNames(song.artists)}
                   duration={song.duration}
+                  isAdded={isSongInLibrary(song._id)}
                   onPress={() => handlePlaySong(song)}
-                  onAddPress={() => {
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
-                    Alert.alert(
-                      "Thêm vào Playlist",
-                      `Thêm "${song.title}" vào danh sách phát mới. Chức năng đang được phát triển.`
-                    );
-                  }}
+                  onAddPress={() => handleToggleLibrary(song)}
                 />
               ))}
             </View>

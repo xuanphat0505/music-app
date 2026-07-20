@@ -1,26 +1,34 @@
-import React, { useState } from "react";
+import React, { useState, useCallback, useRef } from "react";
+import { useFocusEffect } from "expo-router";
 import {
   StyleSheet,
   ScrollView,
+  FlatList,
   StatusBar,
   Alert,
   ActivityIndicator,
+  RefreshControl,
+  View,
+  Text,
+  NativeSyntheticEvent,
+  NativeScrollEvent,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
+import { Feather } from "@expo/vector-icons";
 
 import { COLORS } from "@/constants/Colors";
-import { Header } from "@/components/common";
+import { Header, SongItem, ScrollToTopButton } from "@/components/common";
 import {
   CreatePlaylistModal,
   LibraryTabs,
   LibrarySubHeader,
   PlaylistsGrid,
-  SongsList,
 } from "@/components/library";
 import { usePlayerStore } from "@/store/playerStore";
 import { Playlist, Track } from "@/types";
-import { useSongs } from "@/hooks/useSongs";
+import { useLibrarySongs } from "@/hooks/useLibrarySongs";
+import { formatArtistNames } from "@/utils/artist";
 
 // Danh sách danh sách phát mẫu với ảnh bìa ghép 2x2 chất lượng cao
 const MOCK_PLAYLISTS: Playlist[] = [
@@ -48,20 +56,52 @@ const MOCK_PLAYLISTS: Playlist[] = [
   },
 ];
 
-// Màn hình Thư viện hiển thị danh sách phát cá nhân và các bài hát được phát gần đây
+// Màn hình Thư viện hiển thị danh sách phát cá nhân và các bài hát đã lưu với phân trang vô tận
 export default function LibraryScreen() {
   const playTrack = usePlayerStore((state) => state.playTrack);
   const [playlists, setPlaylists] = useState<Playlist[]>(MOCK_PLAYLISTS);
   const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
-  const [activeTab, setActiveTab] = useState<"playlists" | "songs">(
-    "playlists",
+  const [activeTab, setActiveTab] = useState<"playlists" | "songs">("playlists");
+
+  const flatListRef = useRef<FlatList>(null);
+  const [showScrollTop, setShowScrollTop] = useState(false);
+
+  const {
+    librarySongs,
+    librarySongIds,
+    isLoading: isLoadingLibrary,
+    isFetchingNextPage,
+    hasMore,
+    toggleSong,
+    refreshLibrary,
+    fetchNextPage,
+  } = useLibrarySongs();
+
+  // Tự động làm mới danh sách bài hát khi chuyển tới màn hình Library
+  useFocusEffect(
+    useCallback(() => {
+      refreshLibrary();
+    }, [refreshLibrary]),
   );
-  const [addedSongs, setAddedSongs] = useState<string[]>(["s1", "s3", "s5"]);
-  const { songs: allTracks, isLoading: isLoadingSongs } = useSongs({});
 
   // Hàm kích hoạt rung phản hồi xúc giác nhẹ khi tương tác
   const triggerHaptic = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+  };
+
+  // Theo dõi sự kiện cuộn để hiển thị hoặc ẩn nút Scroll to Top
+  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const offsetY = event.nativeEvent.contentOffset.y;
+    const isPastThreshold = offsetY > 300;
+    if (isPastThreshold !== showScrollTop) {
+      setShowScrollTop(isPastThreshold);
+    }
+  };
+
+  // Xử lý cuộn danh sách bài hát mượt mượt về vị trí đầu tiên
+  const handleScrollToTop = () => {
+    triggerHaptic();
+    flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
   };
 
   // Hàm xử lý khi chọn phát một bài hát từ danh sách
@@ -72,9 +112,7 @@ export default function LibraryScreen() {
 
   // Hàm xử lý xác nhận tạo playlist mới từ hộp thoại modal nhập liệu
   const handleCreatePlaylist = (title: string, desc: string) => {
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(
-      () => {},
-    );
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
     const nextId = playlists.length + 1;
     const mockImagesPool = [
       [
@@ -106,26 +144,20 @@ export default function LibraryScreen() {
   // Hàm hiển thị hộp thoại xác nhận khi nhấn giữ để xóa danh sách phát
   const handleLongPressPlaylist = (playlist: Playlist) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
-    Alert.alert(
-      "Manage Playlist",
-      `What would you like to do with "${playlist.title}"?`,
-      [
-        {
-          text: "Cancel",
-          style: "cancel",
+    Alert.alert("Manage Playlist", `What would you like to do with "${playlist.title}"?`, [
+      {
+        text: "Cancel",
+        style: "cancel",
+      },
+      {
+        text: "Delete Playlist",
+        style: "destructive",
+        onPress: () => {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
+          setPlaylists(playlists.filter((p) => p._id !== playlist._id));
         },
-        {
-          text: "Delete Playlist",
-          style: "destructive",
-          onPress: () => {
-            Haptics.notificationAsync(
-              Haptics.NotificationFeedbackType.Warning,
-            ).catch(() => {});
-            setPlaylists(playlists.filter((p) => p._id !== playlist._id));
-          },
-        },
-      ],
-    );
+      },
+    ]);
   };
 
   // Hàm hiển thị cảnh báo thông tin khi chọn xem chi tiết danh sách phát
@@ -134,64 +166,140 @@ export default function LibraryScreen() {
     Alert.alert("Playlist", `Opening playlist: ${playlist.title}`);
   };
 
-  // Hàm xử lý thêm/bớt bài hát khỏi danh sách phát (toggle like)
+  // Hàm xử lý thêm/bớt bài hát khỏi thư viện cá nhân
   const handleToggleAddSong = (song: Track) => {
     triggerHaptic();
-    const songId = song._id;
-    if (addedSongs.includes(songId)) {
-      setAddedSongs(addedSongs.filter((id) => id !== songId));
-    } else {
-      setAddedSongs([...addedSongs, songId]);
+    toggleSong(song);
+  };
+
+  // Render từng bài hát trong FlatList
+  const renderSongItem = ({ item }: { item: Track }) => (
+    <View style={styles.songItemContainer}>
+      <SongItem
+        song={item}
+        subtitle={formatArtistNames(item.artists)}
+        duration={item.duration}
+        isAdded={librarySongIds.includes(item._id)}
+        onPress={() => handlePlaySong(item)}
+        onAddPress={() => handleToggleAddSong(item)}
+      />
+    </View>
+  );
+
+  // Render phần Header dùng chung trong FlatList
+  const renderHeader = () => (
+    <>
+      <Header title="Library" />
+      <LibraryTabs
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        triggerHaptic={triggerHaptic}
+      />
+      <LibrarySubHeader
+        activeTab={activeTab}
+        playlistsCount={playlists.length}
+        songsCount={librarySongs.length}
+        tracks={librarySongs}
+        playTrack={playTrack}
+        triggerHaptic={triggerHaptic}
+      />
+    </>
+  );
+
+  // Render Spinner chân danh sách khi đang tải trang tiếp theo
+  const renderFooter = () => {
+    if (!isFetchingNextPage) return <View style={{ height: 160 }} />;
+    return (
+      <View style={styles.footerLoader}>
+        <ActivityIndicator size="small" color={COLORS.PRIMARY} />
+      </View>
+    );
+  };
+
+  // Render giao diện thông báo khi thư viện rỗng
+  const renderEmptySongs = () => {
+    if (isLoadingLibrary) {
+      return (
+        <ActivityIndicator
+          size="small"
+          color={COLORS.PRIMARY}
+          style={{ marginTop: 40 }}
+        />
+      );
     }
+    return (
+      <View style={styles.emptyContainer}>
+        <Feather
+          name="plus-circle"
+          size={44}
+          color={COLORS.TEXT_SECONDARY}
+          style={styles.emptyIcon}
+        />
+        <Text style={styles.emptyTitle}>Chưa có bài hát nào</Text>
+        <Text style={styles.emptySubtitle}>
+          Nhấn biểu tượng + ở bài hát bạn yêu thích để thêm vào Thư viện cá nhân.
+        </Text>
+      </View>
+    );
   };
 
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" />
 
-      {/* Thanh tiêu đề tùy chỉnh */}
-      <Header title="Library" />
-
-      {/* Bộ điều khiển chuyển đổi giữa danh sách phát và danh sách bài hát */}
-      <LibraryTabs
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-        triggerHaptic={triggerHaptic}
-      />
-
-      <ScrollView
-        contentContainerStyle={styles.scrollContainer}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Phần thông tin chi tiết đầu danh mục (Sub-header) */}
-        <LibrarySubHeader
-          activeTab={activeTab}
-          playlistsCount={playlists.length}
-          songsCount={allTracks.length}
-          tracks={allTracks}
-          playTrack={playTrack}
-          triggerHaptic={triggerHaptic}
+      {activeTab === "songs" ? (
+        <FlatList
+          ref={flatListRef}
+          data={librarySongs}
+          keyExtractor={(item) => item._id}
+          renderItem={renderSongItem}
+          ListHeaderComponent={renderHeader}
+          ListFooterComponent={renderFooter}
+          ListEmptyComponent={renderEmptySongs}
+          onEndReached={() => {
+            if (hasMore && !isFetchingNextPage) {
+              fetchNextPage();
+            }
+          }}
+          onEndReachedThreshold={0.5}
+          onScroll={handleScroll}
+          scrollEventThrottle={16}
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={isLoadingLibrary}
+              onRefresh={() => refreshLibrary(true)}
+              tintColor={COLORS.PRIMARY}
+            />
+          }
         />
-
-        {/* Nội dung danh sách theo Tab đang hoạt động */}
-        {activeTab === "playlists" ? (
+      ) : (
+        <ScrollView
+          contentContainerStyle={styles.scrollContainer}
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={isLoadingLibrary}
+              onRefresh={() => refreshLibrary(true)}
+              tintColor={COLORS.PRIMARY}
+            />
+          }
+        >
+          {renderHeader()}
           <PlaylistsGrid
             playlists={playlists}
             onSelectPlaylist={handleSelectPlaylist}
             onLongPressPlaylist={handleLongPressPlaylist}
             onAddPlaylistPress={() => setIsCreateModalVisible(true)}
           />
-        ) : isLoadingSongs ? (
-          <ActivityIndicator size="small" color={COLORS.PRIMARY} style={{ marginTop: 40 }} />
-        ) : (
-          <SongsList
-            songs={allTracks}
-            addedSongs={addedSongs}
-            onPlaySong={handlePlaySong}
-            onToggleAddSong={handleToggleAddSong}
-          />
-        )}
-      </ScrollView>
+        </ScrollView>
+      )}
+
+      {/* Nút cuộn mượt về đầu trang */}
+      <ScrollToTopButton
+        visible={showScrollTop && activeTab === "songs"}
+        onPress={handleScrollToTop}
+      />
 
       {/* Hộp thoại tạo Playlist mới */}
       <CreatePlaylistModal
@@ -210,5 +318,38 @@ const styles = StyleSheet.create({
   },
   scrollContainer: {
     paddingBottom: 160,
+  },
+  songItemContainer: {
+    paddingHorizontal: 20,
+  },
+  footerLoader: {
+    paddingVertical: 20,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingBottom: 160,
+  },
+  emptyContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 32,
+    marginTop: 50,
+  },
+  emptyIcon: {
+    marginBottom: 16,
+    opacity: 0.6,
+  },
+  emptyTitle: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: COLORS.TEXT_PRIMARY,
+    fontFamily: "Outfit",
+    marginBottom: 8,
+  },
+  emptySubtitle: {
+    fontSize: 13,
+    color: COLORS.TEXT_SECONDARY,
+    fontFamily: "Inter",
+    textAlign: "center",
+    lineHeight: 18,
   },
 });

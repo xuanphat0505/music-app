@@ -55,7 +55,7 @@ export const CDSpin: React.FC<CDSpinProps> = ({ coverUrl, isPlaying }) => {
         false,
       );
     }
-  }, [coverUrl]);
+  }, [coverUrl, isPlaying, rotation]);
 
   const animatedStyle = useAnimatedStyle(() => {
     return {

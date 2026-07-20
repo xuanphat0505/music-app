@@ -40,4 +40,11 @@ export const ENDPOINTS = {
     BASE: "/albums",
     DETAIL: (id: string) => `/albums/${id}`,
   },
+
+  // libraries endpoint
+  LIBRARIES: {
+    TOGGLE: (songId: string) => `/libraries/toggle/${songId}`,
+    SONGS: "/libraries/songs",
+    IDS: "/libraries/ids",
+  },
 };

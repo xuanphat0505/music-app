@@ -16,6 +16,7 @@ import * as Haptics from "expo-haptics";
 import { Track, Artist, Album, RecentSearchEntity } from "@/types";
 import { FilterChips, ArtistResultItem, AlbumResultItem } from "./results";
 import { formatArtistNames } from "@/utils/artist";
+import { useLibrarySongs } from "@/hooks/useLibrarySongs";
 
 interface SearchResultsProps {
   songs: Track[];
@@ -40,6 +41,7 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
 }) => {
   const playTrack = usePlayerStore((state) => state.playTrack);
   const [activeTab, setActiveTab] = useState<TabType>("all");
+  const { isSongInLibrary, toggleSong } = useLibrarySongs();
 
   // Xử lý khi nhấn phát bài hát
   const handlePlaySong = (track: Track) => {
@@ -55,6 +57,12 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
         data: track,
       });
     }
+  };
+
+  // Xử lý thêm/bớt bài hát vào thư viện cá nhân
+  const handleToggleLibrary = (song: Track) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+    toggleSong(song);
   };
 
   // Xử lý khi nhấn chọn nghệ sĩ
@@ -142,13 +150,8 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
                   song={song}
                   onPress={() => handlePlaySong(song)}
                   duration={song.duration}
-                  onAddPress={() => {
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
-                    Alert.alert(
-                      "Add to Playlist",
-                      `Thêm "${song.title}" vào danh sách phát. Chức năng đang được phát triển.`
-                    );
-                  }}
+                  isAdded={isSongInLibrary(song._id)}
+                  onAddPress={() => handleToggleLibrary(song)}
                 />
               ))}
             </View>
@@ -226,13 +229,8 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
               song={song}
               onPress={() => handlePlaySong(song)}
               duration={song.duration}
-              onAddPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
-                Alert.alert(
-                  "Add to Playlist",
-                  `Thêm "${song.title}" vào danh sách phát. Chức năng đang được phát triển.`
-                );
-              }}
+              isAdded={isSongInLibrary(song._id)}
+              onAddPress={() => handleToggleLibrary(song)}
             />
           ))}
         </View>

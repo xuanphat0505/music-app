@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef, useEffect } from "react";
 import {
   StyleSheet,
   Text,
@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   StyleProp,
   ViewStyle,
+  Animated,
 } from "react-native";
 import { Feather, Ionicons } from "@expo/vector-icons";
 import { COLORS } from "@/constants/Colors";
@@ -23,7 +24,7 @@ const formatDuration = (sec: number | string) => {
 };
 
 // Component dùng chung hiển thị một dòng thông tin bài hát có thời lượng bắt buộc
-export const SongItem: React.FC<SongItemProps> = ({
+export const SongItem: React.FC<SongItemProps> = React.memo(({
   song,
   subtitle,
   style,
@@ -33,6 +34,33 @@ export const SongItem: React.FC<SongItemProps> = ({
   isAdded = false,
 }) => {
   const currentTrack = usePlayerStore((state) => state.currentTrack);
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+  const rotateAnim = useRef(new Animated.Value(0)).current;
+
+  // Thực hiện chuyển động nảy và xoay icon khi trạng thái lưu bài hát thay đổi
+  useEffect(() => {
+    Animated.parallel([
+      Animated.sequence([
+        Animated.timing(scaleAnim, {
+          toValue: 1.35,
+          duration: 120,
+          useNativeDriver: true,
+        }),
+        Animated.spring(scaleAnim, {
+          toValue: 1,
+          friction: 4,
+          tension: 140,
+          useNativeDriver: true,
+        }),
+      ]),
+      Animated.timing(rotateAnim, {
+        toValue: isAdded ? 1 : 0,
+        duration: 220,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [isAdded, scaleAnim, rotateAnim]);
+
   // So sánh bài hát đang hoạt động bằng spotifyId hoặc _id từ server
   const isActive = !!(
     currentTrack &&
@@ -49,6 +77,12 @@ export const SongItem: React.FC<SongItemProps> = ({
     song.artwork && song.artwork.trim() !== "" && !imageError
       ? song.artwork
       : "https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?q=80&w=300";
+
+  const spin = rotateAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ["180deg", "0deg"],
+  });
+
   return (
     <View
       style={[
@@ -87,22 +121,28 @@ export const SongItem: React.FC<SongItemProps> = ({
             onPress={onAddPress}
             activeOpacity={0.7}
           >
-            {isAdded ? (
-              <Ionicons name="checkmark-circle" size={20} color="#1db954" />
-            ) : (
-              <Feather
-                name="plus-circle"
-                size={20}
-                color={COLORS.TEXT_SECONDARY}
-              />
-            )}
+            <Animated.View
+              style={{
+                transform: [{ scale: scaleAnim }, { rotate: spin }],
+              }}
+            >
+              {isAdded ? (
+                <Ionicons name="checkmark-circle" size={20} color="#1db954" />
+              ) : (
+                <Feather
+                  name="plus-circle"
+                  size={20}
+                  color={COLORS.TEXT_SECONDARY}
+                />
+              )}
+            </Animated.View>
           </TouchableOpacity>
         )}
         <Text style={styles.durationText}>{formatDuration(duration)}</Text>
       </View>
     </View>
   );
-};
+});
 
 interface SongItemProps {
   song: Track | any;
@@ -176,3 +216,6 @@ const styles = StyleSheet.create({
     textAlign: "right",
   },
 });
+
+SongItem.displayName = "SongItem";
+

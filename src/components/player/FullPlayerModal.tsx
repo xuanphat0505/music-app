@@ -21,6 +21,9 @@ import { usePlayerStore } from "@/store/playerStore";
 import { CDSpin, LyricsModal } from "@/components/player";
 import { AudioService } from "@/services/audioService";
 import { formatArtistNames } from "@/utils/artist";
+import { usePlaylistStore } from "@/store/playlistStore";
+import { AddToPlaylistModal, CreatePlaylistModal } from "@/components/library";
+import { showSuccess } from "@/utils/toast";
 
 // Định dạng giây thành phút và giây
 const formatTime = (seconds: number) => {
@@ -48,6 +51,21 @@ export const FullPlayerModal: React.FC = () => {
   const [isShuffle, setIsShuffle] = useState(false);
   const [isRepeat, setIsRepeat] = useState(false);
   const [showLyrics, setShowLyrics] = useState(false);
+
+  const [isAddToPlaylistVisible, setIsAddToPlaylistVisible] = useState(false);
+  const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
+  const { createPlaylist, addSongToPlaylist } = usePlaylistStore();
+
+  // Xử lý tạo mới danh sách phát từ modal và tự động thêm bài hát đang phát vào đó
+  const handleCreatePlaylist = async (title: string, desc: string) => {
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+    const created = await createPlaylist(title, desc);
+    setIsCreateModalVisible(false);
+    if (created && currentTrack) {
+      await addSongToPlaylist(created._id, currentTrack);
+      showSuccess(`Đã tạo và thêm vào "${created.title}"`);
+    }
+  };
 
   // Reset trạng thái xem lyrics khi bài hát thay đổi
   useEffect(() => {
@@ -262,9 +280,10 @@ export const FullPlayerModal: React.FC = () => {
             <TouchableOpacity
               style={styles.footerButton}
               activeOpacity={0.7}
-              onPress={() =>
-                Alert.alert("Playlist", "Add song to your playlists")
-              }
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+                setIsAddToPlaylistVisible(true);
+              }}
             >
               <Feather
                 name="plus-square"
@@ -293,6 +312,24 @@ export const FullPlayerModal: React.FC = () => {
         <LyricsModal
           visible={showLyrics}
           onClose={() => setShowLyrics(false)}
+        />
+
+        {/* Modal hiển thị danh sách các Playlist để người dùng chọn lưu vào */}
+        <AddToPlaylistModal
+          visible={isAddToPlaylistVisible}
+          track={currentTrack}
+          onClose={() => setIsAddToPlaylistVisible(false)}
+          onCreatePlaylistPress={() => {
+            setIsAddToPlaylistVisible(false);
+            setIsCreateModalVisible(true);
+          }}
+        />
+
+        {/* Modal điền thông tin để người dùng tạo mới danh sách phát */}
+        <CreatePlaylistModal
+          visible={isCreateModalVisible}
+          onClose={() => setIsCreateModalVisible(false)}
+          onCreate={handleCreatePlaylist}
         />
       </View>
     </Modal>

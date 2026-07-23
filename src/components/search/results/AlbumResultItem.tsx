@@ -1,22 +1,71 @@
-import React, { useState } from "react";
-import { TouchableOpacity, Image, Text, View, StyleSheet } from "react-native";
-import { Feather } from "@expo/vector-icons";
+import React, { useState, useRef, useEffect } from "react";
+import {
+  TouchableOpacity,
+  Image,
+  Text,
+  View,
+  StyleSheet,
+  Animated,
+  StyleProp,
+  ViewStyle,
+} from "react-native";
+import { Feather, Ionicons } from "@expo/vector-icons";
 import { COLORS } from "@/constants/Colors";
 import { PLACEHOLDER_IMAGES } from "@/constants/Images";
 import { Album } from "@/types";
+import {formatDuration} from '@/utils/format'
 
+// Định nghĩa giao diện cho các tham số đầu vào của component AlbumResultItem
 interface AlbumResultItemProps {
   album: Album;
   variant: "horizontal" | "vertical";
   onPress: () => void;
+  duration?: string | number;
+  isAdded?: boolean;
+  onAddPress?: () => void;
+  onPlaylistPress?: () => void;
+  style?: StyleProp<ViewStyle>;
 }
 
-export const AlbumResultItem: React.FC<AlbumResultItemProps> = ({
+
+// Component hiển thị mục kết quả tìm kiếm Album hỗ trợ cấu hình ngang/dọc và các hành vi tương tác nhanh
+export const AlbumResultItem: React.FC<AlbumResultItemProps> = React.memo(({
   album,
   variant,
   onPress,
+  duration,
+  isAdded = false,
+  onAddPress,
+  onPlaylistPress,
+  style,
 }) => {
   const [hasError, setHasError] = useState(false);
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+  const rotateAnim = useRef(new Animated.Value(0)).current;
+
+  // Thực hiện hiệu ứng nảy và xoay cho biểu tượng thư viện khi trạng thái thay đổi
+  useEffect(() => {
+    Animated.parallel([
+      Animated.sequence([
+        Animated.timing(scaleAnim, {
+          toValue: 1.35,
+          duration: 120,
+          useNativeDriver: true,
+        }),
+        Animated.spring(scaleAnim, {
+          toValue: 1,
+          friction: 4,
+          tension: 140,
+          useNativeDriver: true,
+        }),
+      ]),
+      Animated.timing(rotateAnim, {
+        toValue: isAdded ? 1 : 0,
+        duration: 220,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [isAdded, scaleAnim, rotateAnim]);
 
   const artworkUri =
     album.artwork && album.artwork.trim() !== "" && !hasError
@@ -26,10 +75,19 @@ export const AlbumResultItem: React.FC<AlbumResultItemProps> = ({
   const artistName =
     typeof album.artist === "string" ? album.artist : album.artist?.name || "Unknown Artist";
 
+  const spin = rotateAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ["180deg", "0deg"],
+  });
+
+  const hasRightControls =
+    duration !== undefined || onAddPress !== undefined || onPlaylistPress !== undefined;
+
+  // Trả về giao diện thẻ nằm ngang nếu variant được chọn là horizontal
   if (variant === "horizontal") {
     return (
       <TouchableOpacity
-        style={styles.albumCardHorizontal}
+        style={[styles.albumCardHorizontal, style]}
         activeOpacity={0.8}
         onPress={onPress}
       >
@@ -48,9 +106,10 @@ export const AlbumResultItem: React.FC<AlbumResultItemProps> = ({
     );
   }
 
+  // Trả về giao diện danh sách nằm dọc mặc định
   return (
     <TouchableOpacity
-      style={styles.albumListItem}
+      style={[styles.albumListItem, style]}
       activeOpacity={0.7}
       onPress={onPress}
     >
@@ -67,10 +126,56 @@ export const AlbumResultItem: React.FC<AlbumResultItemProps> = ({
           Album • {artistName}
         </Text>
       </View>
-      <Feather name="chevron-right" size={20} color={COLORS.TEXT_SECONDARY} />
+      {hasRightControls ? (
+        <View style={styles.rightSection}>
+          {onAddPress && (
+            <TouchableOpacity
+              style={styles.addButton}
+              onPress={onAddPress}
+              activeOpacity={0.7}
+            >
+              <Animated.View
+                style={{
+                  transform: [{ scale: scaleAnim }, { rotate: spin }],
+                }}
+              >
+                {isAdded ? (
+                  <Ionicons name="checkmark-circle" size={20} color="#1db954" />
+                ) : (
+                  <Feather
+                    name="plus-circle"
+                    size={20}
+                    color={COLORS.TEXT_SECONDARY}
+                  />
+                )}
+              </Animated.View>
+            </TouchableOpacity>
+          )}
+          {onPlaylistPress && (
+            <TouchableOpacity
+              style={styles.addButton}
+              onPress={onPlaylistPress}
+              activeOpacity={0.7}
+            >
+              <Feather
+                name="folder-plus"
+                size={18}
+                color={COLORS.TEXT_SECONDARY}
+              />
+            </TouchableOpacity>
+          )}
+          {duration !== undefined && (
+            <Text style={styles.durationText}>{formatDuration(duration)}</Text>
+          )}
+        </View>
+      ) : (
+        <Feather name="chevron-right" size={20} color={COLORS.TEXT_SECONDARY} />
+      )}
     </TouchableOpacity>
   );
-};
+});
+
+AlbumResultItem.displayName = "AlbumResultItem";
 
 const styles = StyleSheet.create({
   albumCardHorizontal: {
@@ -126,4 +231,20 @@ const styles = StyleSheet.create({
     color: COLORS.TEXT_SECONDARY,
     fontFamily: "Inter",
   },
+  rightSection: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 14,
+  },
+  addButton: {
+    padding: 6,
+  },
+  durationText: {
+    fontSize: 12,
+    color: COLORS.TEXT_SECONDARY,
+    fontFamily: "Inter",
+    minWidth: 32,
+    textAlign: "right",
+  },
 });
+

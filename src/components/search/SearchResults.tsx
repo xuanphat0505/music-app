@@ -17,6 +17,9 @@ import { Track, Artist, Album, RecentSearchEntity } from "@/types";
 import { FilterChips, ArtistResultItem, AlbumResultItem } from "./results";
 import { formatArtistNames } from "@/utils/artist";
 import { useLibrarySongs } from "@/hooks/useLibrarySongs";
+import { usePlaylistStore } from "@/store/playlistStore";
+import { AddToPlaylistModal, CreatePlaylistModal } from "@/components/library";
+import { showSuccess } from "@/utils/toast";
 
 interface SearchResultsProps {
   songs: Track[];
@@ -42,6 +45,35 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
   const playTrack = usePlayerStore((state) => state.playTrack);
   const [activeTab, setActiveTab] = useState<TabType>("all");
   const { isSongInLibrary, toggleSong } = useLibrarySongs();
+  const { createPlaylist, addSongToPlaylist } = usePlaylistStore();
+  const [selectedTrackForPlaylist, setSelectedTrackForPlaylist] = useState<Track | null>(null);
+  const [isAddToPlaylistVisible, setIsAddToPlaylistVisible] = useState(false);
+  const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
+
+  // Xử lý mở hộp thoại thêm bài hát vào danh sách phát
+  const handleOpenAddToPlaylist = (track: Track) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+    setSelectedTrackForPlaylist(track);
+    setIsAddToPlaylistVisible(true);
+  };
+
+  // Xử lý khi xác nhận tạo mới một danh sách phát và lưu bài hát vào đó
+  const handleCreatePlaylist = async (title: string, desc: string) => {
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+    const created = await createPlaylist(title, desc);
+    setIsCreateModalVisible(false);
+    if (created) {
+      if (selectedTrackForPlaylist) {
+        await addSongToPlaylist(created._id, selectedTrackForPlaylist);
+        setSelectedTrackForPlaylist(null);
+        showSuccess(`Đã tạo và thêm vào "${created.title}"`);
+      } else {
+        showSuccess(`Đã tạo danh sách phát "${created.title}"`);
+      }
+    } else {
+      setSelectedTrackForPlaylist(null);
+    }
+  };
 
   // Xử lý khi nhấn phát bài hát
   const handlePlaySong = (track: Track) => {
@@ -152,6 +184,7 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
                   duration={song.duration}
                   isAdded={isSongInLibrary(song._id)}
                   onAddPress={() => handleToggleLibrary(song)}
+                  onPlaylistPress={() => handleOpenAddToPlaylist(song)}
                 />
               ))}
             </View>
@@ -231,6 +264,7 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
               duration={song.duration}
               isAdded={isSongInLibrary(song._id)}
               onAddPress={() => handleToggleLibrary(song)}
+              onPlaylistPress={() => handleOpenAddToPlaylist(song)}
             />
           ))}
         </View>
@@ -290,6 +324,30 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
       {activeTab === "songs" && renderSongsTab()}
       {activeTab === "artists" && renderArtistsTab()}
       {activeTab === "albums" && renderAlbumsTab()}
+
+      {/* Hộp thoại hiển thị danh sách các Playlist để người dùng lưu vào */}
+      <AddToPlaylistModal
+        visible={isAddToPlaylistVisible}
+        track={selectedTrackForPlaylist}
+        onClose={() => {
+          setIsAddToPlaylistVisible(false);
+          setSelectedTrackForPlaylist(null);
+        }}
+        onCreatePlaylistPress={() => {
+          setIsAddToPlaylistVisible(false);
+          setIsCreateModalVisible(true);
+        }}
+      />
+
+      {/* Hộp thoại điền thông tin để tạo mới một Playlist */}
+      <CreatePlaylistModal
+        visible={isCreateModalVisible}
+        onClose={() => {
+          setIsCreateModalVisible(false);
+          setSelectedTrackForPlaylist(null);
+        }}
+        onCreate={handleCreatePlaylist}
+      />
     </View>
   );
 };

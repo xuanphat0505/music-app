@@ -31,6 +31,10 @@ export interface Playlist {
   title: string;
   description: string;
   coverUrls: string[];
+  songs?: (Track | string)[];
+  user?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 // Thực thể album nhạc

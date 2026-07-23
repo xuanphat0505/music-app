@@ -29,6 +29,7 @@ export const SongItem: React.FC<SongItemProps> = React.memo(({
   subtitle,
   style,
   onPress,
+  onPlaylistPress,
   duration,
   onAddPress,
   isAdded = false,
@@ -138,6 +139,19 @@ export const SongItem: React.FC<SongItemProps> = React.memo(({
             </Animated.View>
           </TouchableOpacity>
         )}
+        {onPlaylistPress && (
+          <TouchableOpacity
+            style={styles.addButton}
+            onPress={onPlaylistPress}
+            activeOpacity={0.7}
+          >
+            <Feather
+              name="folder-plus"
+              size={18}
+              color={COLORS.TEXT_SECONDARY}
+            />
+          </TouchableOpacity>
+        )}
         <Text style={styles.durationText}>{formatDuration(duration)}</Text>
       </View>
     </View>
@@ -151,6 +165,7 @@ interface SongItemProps {
   onPress?: () => void;
   duration: string | number;
   onAddPress?: () => void;
+  onPlaylistPress?: () => void;
   isAdded?: boolean;
 }
 

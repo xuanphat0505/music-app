@@ -47,4 +47,12 @@ export const ENDPOINTS = {
     SONGS: "/libraries/songs",
     IDS: "/libraries/ids",
   },
+
+  // playlists endpoint
+  PLAYLISTS: {
+    BASE: "/playlists",
+    DETAIL: (id: string) => `/playlists/${id}`,
+    ADD_SONG: (id: string) => `/playlists/${id}/songs`,
+    REMOVE_SONG: (id: string, songId: string) => `/playlists/${id}/songs/${songId}`,
+  },
 };

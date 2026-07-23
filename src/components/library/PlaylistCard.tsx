@@ -18,31 +18,92 @@ export const PlaylistCard: React.FC<PlaylistCardProps> = ({
   onLongPress,
   size,
 }) => {
-  // Hàm hiển thị ảnh bìa ghép lưới 2x2 hoặc ảnh đơn hoặc biểu tượng nhạc mặc định
+  // Hàm hiển thị ảnh bìa ghép lưới động hoặc ảnh đơn hoặc biểu tượng nhạc mặc định
   const renderCover = () => {
     const s = size || 140;
-    const gridImgSize = s / 2;
-    if (playlist.coverUrls && playlist.coverUrls.length >= 4) {
+    const gap = 1.5;
+
+    if (!playlist.coverUrls || playlist.coverUrls.length === 0) {
       return (
-        <View style={[styles.gridContainer, { width: s, height: s }]}>
+        <View style={[styles.fallbackCover, { width: s, height: s }]}>
+          <Feather name="music" size={s * 0.23} color={COLORS.TEXT_SECONDARY} />
+        </View>
+      );
+    }
+
+    const len = playlist.coverUrls.length;
+
+    // Trường hợp từ 4 bài hát trở lên: lưới 2x2
+    if (len >= 4) {
+      const gridImgSize = (s - gap) / 2;
+      return (
+        <View style={[styles.gridContainer, { width: s, height: s, gap }]}>
           {playlist.coverUrls.slice(0, 4).map((url, idx) => (
-            <Image key={idx} source={{ uri: url }} style={{ width: gridImgSize, height: gridImgSize }} />
+            <Image
+              key={idx}
+              source={{ uri: url }}
+              style={{ width: gridImgSize, height: gridImgSize }}
+              resizeMode="cover"
+            />
           ))}
         </View>
       );
     }
 
-    const firstCover = playlist.coverUrls?.[0];
-    if (firstCover) {
+    // Trường hợp 3 bài hát: 1 ảnh dọc bên trái, 2 ảnh nhỏ chồng bên phải
+    if (len === 3) {
+      const leftWidth = (s - gap) / 2;
+      const rightWidth = (s - gap) / 2;
+      const rightHeight = (s - gap) / 2;
       return (
-        <Image source={{ uri: firstCover }} style={[styles.singleImage, { width: s, height: s }]} />
+        <View style={[styles.collageContainer, { width: s, height: s, gap }]}>
+          <Image
+            source={{ uri: playlist.coverUrls[0] }}
+            style={{ width: leftWidth, height: s }}
+            resizeMode="cover"
+          />
+          <View style={[styles.rightColumn, { width: rightWidth, gap }]}>
+            <Image
+              source={{ uri: playlist.coverUrls[1] }}
+              style={{ width: rightWidth, height: rightHeight }}
+              resizeMode="cover"
+            />
+            <Image
+              source={{ uri: playlist.coverUrls[2] }}
+              style={{ width: rightWidth, height: rightHeight }}
+              resizeMode="cover"
+            />
+          </View>
+        </View>
       );
     }
 
+    // Trường hợp 2 bài hát: chia đôi theo chiều dọc
+    if (len === 2) {
+      const halfWidth = (s - gap) / 2;
+      return (
+        <View style={[styles.collageContainer, { width: s, height: s, gap }]}>
+          <Image
+            source={{ uri: playlist.coverUrls[0] }}
+            style={{ width: halfWidth, height: s }}
+            resizeMode="cover"
+          />
+          <Image
+            source={{ uri: playlist.coverUrls[1] }}
+            style={{ width: halfWidth, height: s }}
+            resizeMode="cover"
+          />
+        </View>
+      );
+    }
+
+    // Trường hợp 1 bài hát: hiển thị ảnh đơn
     return (
-      <View style={[styles.fallbackCover, { width: s, height: s }]}>
-        <Feather name="music" size={s * 0.23} color={COLORS.TEXT_SECONDARY} />
-      </View>
+      <Image
+        source={{ uri: playlist.coverUrls[0] }}
+        style={[styles.singleImage, { width: s, height: s }]}
+        resizeMode="cover"
+      />
     );
   };
 
@@ -107,6 +168,19 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     backgroundColor: COLORS.SURFACE,
     marginBottom: 8,
+  },
+  collageContainer: {
+    width: 140,
+    height: 140,
+    borderRadius: 12,
+    overflow: "hidden",
+    flexDirection: "row",
+    backgroundColor: COLORS.SURFACE,
+    marginBottom: 8,
+  },
+  rightColumn: {
+    flexDirection: "column",
+    height: "100%",
   },
   gridImage: {
     width: 70,

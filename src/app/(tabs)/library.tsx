@@ -21,47 +21,36 @@ import { COLORS } from "@/constants/Colors";
 import { Header, SongItem, ScrollToTopButton } from "@/components/common";
 import {
   CreatePlaylistModal,
+  AddToPlaylistModal,
   LibraryTabs,
   LibrarySubHeader,
   PlaylistsGrid,
 } from "@/components/library";
 import { usePlayerStore } from "@/store/playerStore";
+import { usePlaylistStore } from "@/store/playlistStore";
 import { Playlist, Track } from "@/types";
 import { useLibrarySongs } from "@/hooks/useLibrarySongs";
+import { showSuccess } from "@/utils/toast";
 import { formatArtistNames } from "@/utils/artist";
-
-// Danh sách danh sách phát mẫu với ảnh bìa ghép 2x2 chất lượng cao
-const MOCK_PLAYLISTS: Playlist[] = [
-  {
-    _id: "p1",
-    title: "Night Drive",
-    description: "Curated for You",
-    coverUrls: [
-      "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=100&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?q=80&w=100&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=100&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?q=80&w=100&auto=format&fit=crop",
-    ],
-  },
-  {
-    _id: "p2",
-    title: "Deep Focus",
-    description: "24 Tracks",
-    coverUrls: [
-      "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=100&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1511192336575-5a79af67a629?q=80&w=100&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1478760329108-5c3ed9d495a0?q=80&w=100&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1498038432885-c6f3f1b912ee?q=80&w=100&auto=format&fit=crop",
-    ],
-  },
-];
 
 // Màn hình Thư viện hiển thị danh sách phát cá nhân và các bài hát đã lưu với phân trang vô tận
 export default function LibraryScreen() {
   const playTrack = usePlayerStore((state) => state.playTrack);
-  const [playlists, setPlaylists] = useState<Playlist[]>(MOCK_PLAYLISTS);
+
+  const {
+    playlists,
+    fetchPlaylists,
+    createPlaylist,
+    deletePlaylist,
+    addSongToPlaylist,
+  } = usePlaylistStore();
+
   const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
   const [activeTab, setActiveTab] = useState<"playlists" | "songs">("playlists");
+
+  const [selectedTrackForPlaylist, setSelectedTrackForPlaylist] =
+    useState<Track | null>(null);
+  const [isAddToPlaylistVisible, setIsAddToPlaylistVisible] = useState(false);
 
   const flatListRef = useRef<FlatList>(null);
   const [showScrollTop, setShowScrollTop] = useState(false);
@@ -77,16 +66,24 @@ export default function LibraryScreen() {
     fetchNextPage,
   } = useLibrarySongs();
 
-  // Tự động làm mới danh sách bài hát khi chuyển tới màn hình Library
+  // Tự động làm mới danh sách phát và danh sách bài hát khi chuyển tới màn hình Library
   useFocusEffect(
     useCallback(() => {
       refreshLibrary();
-    }, [refreshLibrary]),
+      fetchPlaylists();
+    }, [refreshLibrary, fetchPlaylists]),
   );
 
-  // Hàm kích hoạt rung phản hồi xúc giác nhẹ khi tương tác
+  // Kích hoạt rung phản hồi xúc giác nhẹ khi tương tác
   const triggerHaptic = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+  };
+
+  // Mở modal thêm bài hát vào danh sách phát
+  const handleOpenAddToPlaylist = (track: Track) => {
+    triggerHaptic();
+    setSelectedTrackForPlaylist(track);
+    setIsAddToPlaylistVisible(true);
   };
 
   // Theo dõi sự kiện cuộn để hiển thị hoặc ẩn nút Scroll to Top
@@ -104,69 +101,67 @@ export default function LibraryScreen() {
     flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
   };
 
-  // Hàm xử lý khi chọn phát một bài hát từ danh sách
+  // Xử lý khi chọn phát một bài hát từ danh sách
   const handlePlaySong = (track: Track) => {
     triggerHaptic();
     playTrack(track);
   };
 
-  // Hàm xử lý xác nhận tạo playlist mới từ hộp thoại modal nhập liệu
-  const handleCreatePlaylist = (title: string, desc: string) => {
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
-    const nextId = playlists.length + 1;
-    const mockImagesPool = [
-      [
-        "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=100&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?q=80&w=100&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=100&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?q=80&w=100&auto=format&fit=crop",
-      ],
-      [
-        "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=100&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1511192336575-5a79af67a629?q=80&w=100&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1478760329108-5c3ed9d495a0?q=80&w=100&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1498038432885-c6f3f1b912ee?q=80&w=100&auto=format&fit=crop",
-      ],
-    ];
-    const selectedCoverSet = mockImagesPool[nextId % mockImagesPool.length];
-
-    const newPlaylist: Playlist = {
-      _id: `p${Date.now()}`,
-      title,
-      description: desc || "0 Tracks",
-      coverUrls: selectedCoverSet,
-    };
-
-    setPlaylists([...playlists, newPlaylist]);
+  // Xử lý xác nhận tạo danh sách phát mới từ hộp thoại nhập liệu đồng thời tự động lưu bài hát (nếu có)
+  const handleCreatePlaylist = async (title: string, desc: string) => {
+    Haptics.notificationAsync(
+      Haptics.NotificationFeedbackType.Success,
+    ).catch(() => {});
+    const created = await createPlaylist(title, desc);
     setIsCreateModalVisible(false);
+    if (created) {
+      if (selectedTrackForPlaylist) {
+        await addSongToPlaylist(created._id, selectedTrackForPlaylist);
+        setSelectedTrackForPlaylist(null);
+        showSuccess(`Đã tạo và thêm vào "${created.title}"`);
+      } else {
+        showSuccess(`Đã tạo danh sách phát "${created.title}"`);
+      }
+    } else {
+      setSelectedTrackForPlaylist(null);
+    }
   };
 
-  // Hàm hiển thị hộp thoại xác nhận khi nhấn giữ để xóa danh sách phát
+  // Hiển thị hộp thoại xác nhận khi nhấn giữ để xóa danh sách phát
   const handleLongPressPlaylist = (playlist: Playlist) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
-    Alert.alert("Manage Playlist", `What would you like to do with "${playlist.title}"?`, [
-      {
-        text: "Cancel",
-        style: "cancel",
-      },
-      {
-        text: "Delete Playlist",
-        style: "destructive",
-        onPress: () => {
-          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
-          setPlaylists(playlists.filter((p) => p._id !== playlist._id));
+    Alert.alert(
+      "Quản lý danh sách phát",
+      `Bạn có muốn xóa danh sách phát "${playlist.title}" không?`,
+      [
+        {
+          text: "Hủy",
+          style: "cancel",
         },
-      },
-    ]);
+        {
+          text: "Xóa danh sách phát",
+          style: "destructive",
+          onPress: async () => {
+            Haptics.notificationAsync(
+              Haptics.NotificationFeedbackType.Warning,
+            ).catch(() => {});
+            const success = await deletePlaylist(playlist._id);
+            if (success) {
+              showSuccess(`Đã xóa danh sách phát "${playlist.title}"`);
+            }
+          },
+        },
+      ],
+    );
   };
 
-  // Hàm hiển thị cảnh báo thông tin khi chọn xem chi tiết danh sách phát
+  // Hiển thị cảnh báo thông tin khi chọn xem chi tiết danh sách phát
   const handleSelectPlaylist = (playlist: Playlist) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
-    Alert.alert("Playlist", `Opening playlist: ${playlist.title}`);
+    triggerHaptic();
+    Alert.alert("Danh sách phát", `Xem danh sách phát: ${playlist.title}`);
   };
 
-  // Hàm xử lý thêm/bớt bài hát khỏi thư viện cá nhân
+  // Xử lý thêm/bớt bài hát khỏi thư viện cá nhân
   const handleToggleAddSong = (song: Track) => {
     triggerHaptic();
     toggleSong(song);
@@ -182,6 +177,7 @@ export default function LibraryScreen() {
         isAdded={librarySongIds.includes(item._id)}
         onPress={() => handlePlaySong(item)}
         onAddPress={() => handleToggleAddSong(item)}
+        onPlaylistPress={() => handleOpenAddToPlaylist(item)}
       />
     </View>
   );
@@ -268,7 +264,10 @@ export default function LibraryScreen() {
           refreshControl={
             <RefreshControl
               refreshing={isLoadingLibrary}
-              onRefresh={() => refreshLibrary(true)}
+              onRefresh={() => {
+                refreshLibrary(true);
+                fetchPlaylists();
+              }}
               tintColor={COLORS.PRIMARY}
             />
           }
@@ -280,7 +279,10 @@ export default function LibraryScreen() {
           refreshControl={
             <RefreshControl
               refreshing={isLoadingLibrary}
-              onRefresh={() => refreshLibrary(true)}
+              onRefresh={() => {
+                refreshLibrary(true);
+                fetchPlaylists();
+              }}
               tintColor={COLORS.PRIMARY}
             />
           }
@@ -290,7 +292,10 @@ export default function LibraryScreen() {
             playlists={playlists}
             onSelectPlaylist={handleSelectPlaylist}
             onLongPressPlaylist={handleLongPressPlaylist}
-            onAddPlaylistPress={() => setIsCreateModalVisible(true)}
+            onAddPlaylistPress={() => {
+              setSelectedTrackForPlaylist(null);
+              setIsCreateModalVisible(true);
+            }}
           />
         </ScrollView>
       )}
@@ -304,8 +309,25 @@ export default function LibraryScreen() {
       {/* Hộp thoại tạo Playlist mới */}
       <CreatePlaylistModal
         visible={isCreateModalVisible}
-        onClose={() => setIsCreateModalVisible(false)}
+        onClose={() => {
+          setIsCreateModalVisible(false);
+          setSelectedTrackForPlaylist(null);
+        }}
         onCreate={handleCreatePlaylist}
+      />
+
+      {/* Hộp thoại Bottom Sheet chọn danh sách phát để thêm bài hát */}
+      <AddToPlaylistModal
+        visible={isAddToPlaylistVisible}
+        track={selectedTrackForPlaylist}
+        onClose={() => {
+          setIsAddToPlaylistVisible(false);
+          setSelectedTrackForPlaylist(null);
+        }}
+        onCreatePlaylistPress={() => {
+          setIsAddToPlaylistVisible(false);
+          setIsCreateModalVisible(true);
+        }}
       />
     </SafeAreaView>
   );

@@ -11,7 +11,7 @@ interface PlaylistCardProps {
   size?: number;
 }
 
-// Component thẻ hiển thị danh sách phát cá nhân hỗ trợ ghép lưới ảnh bìa 2x2
+// Component thẻ hiển thị danh sách phát cá nhân và album dùng chung trên toàn ứng dụng
 export const PlaylistCard: React.FC<PlaylistCardProps> = ({
   playlist,
   onPress,
@@ -23,7 +23,12 @@ export const PlaylistCard: React.FC<PlaylistCardProps> = ({
     const s = size || 140;
     const gap = 1.5;
 
-    if (!playlist.coverUrls || playlist.coverUrls.length === 0) {
+    // Tự động fallback về ảnh bìa đơn của Album nếu danh sách coverUrls của Playlist bị trống
+    const coverUrls = playlist.coverUrls && playlist.coverUrls.length > 0
+      ? playlist.coverUrls
+      : (playlist.artwork ? [playlist.artwork] : []);
+
+    if (coverUrls.length === 0) {
       return (
         <View style={[styles.fallbackCover, { width: s, height: s }]}>
           <Feather name="music" size={s * 0.23} color={COLORS.TEXT_SECONDARY} />
@@ -31,14 +36,14 @@ export const PlaylistCard: React.FC<PlaylistCardProps> = ({
       );
     }
 
-    const len = playlist.coverUrls.length;
+    const len = coverUrls.length;
 
     // Trường hợp từ 4 bài hát trở lên: lưới 2x2
     if (len >= 4) {
       const gridImgSize = (s - gap) / 2;
       return (
         <View style={[styles.gridContainer, { width: s, height: s, gap }]}>
-          {playlist.coverUrls.slice(0, 4).map((url, idx) => (
+          {coverUrls.slice(0, 4).map((url, idx) => (
             <Image
               key={idx}
               source={{ uri: url }}
@@ -58,18 +63,18 @@ export const PlaylistCard: React.FC<PlaylistCardProps> = ({
       return (
         <View style={[styles.collageContainer, { width: s, height: s, gap }]}>
           <Image
-            source={{ uri: playlist.coverUrls[0] }}
+            source={{ uri: coverUrls[0] }}
             style={{ width: leftWidth, height: s }}
             resizeMode="cover"
           />
           <View style={[styles.rightColumn, { width: rightWidth, gap }]}>
             <Image
-              source={{ uri: playlist.coverUrls[1] }}
+              source={{ uri: coverUrls[1] }}
               style={{ width: rightWidth, height: rightHeight }}
               resizeMode="cover"
             />
             <Image
-              source={{ uri: playlist.coverUrls[2] }}
+              source={{ uri: coverUrls[2] }}
               style={{ width: rightWidth, height: rightHeight }}
               resizeMode="cover"
             />
@@ -84,12 +89,12 @@ export const PlaylistCard: React.FC<PlaylistCardProps> = ({
       return (
         <View style={[styles.collageContainer, { width: s, height: s, gap }]}>
           <Image
-            source={{ uri: playlist.coverUrls[0] }}
+            source={{ uri: coverUrls[0] }}
             style={{ width: halfWidth, height: s }}
             resizeMode="cover"
           />
           <Image
-            source={{ uri: playlist.coverUrls[1] }}
+            source={{ uri: coverUrls[1] }}
             style={{ width: halfWidth, height: s }}
             resizeMode="cover"
           />
@@ -97,14 +102,24 @@ export const PlaylistCard: React.FC<PlaylistCardProps> = ({
       );
     }
 
-    // Trường hợp 1 bài hát: hiển thị ảnh đơn
+    // Trường hợp 1 bài hát hoặc Album: hiển thị ảnh đơn
     return (
       <Image
-        source={{ uri: playlist.coverUrls[0] }}
+        source={{ uri: coverUrls[0] }}
         style={[styles.singleImage, { width: s, height: s }]}
         resizeMode="cover"
       />
     );
+  };
+
+  // Xác định phụ đề (Mô tả Playlist -> Ca sĩ Album -> Số bài hát)
+  const getSubtitle = () => {
+    if (playlist.description) return playlist.description;
+    if (playlist.artist) {
+      const artist = playlist.artist;
+      return typeof artist === "string" ? artist : artist?.name || "";
+    }
+    return `${playlist.songs?.length || 0} bài hát`;
   };
 
   return (
@@ -119,7 +134,7 @@ export const PlaylistCard: React.FC<PlaylistCardProps> = ({
         {playlist.title}
       </Text>
       <Text style={styles.playlistSubtitle} numberOfLines={1}>
-        {playlist.description}
+        {getSubtitle()}
       </Text>
     </TouchableOpacity>
   );

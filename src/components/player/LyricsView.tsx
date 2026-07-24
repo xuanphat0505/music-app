@@ -1,4 +1,4 @@
-import React, { useMemo, useEffect, useRef } from "react";
+import React, { useMemo, useEffect, useRef, useCallback } from "react";
 import {
   StyleSheet,
   Text,
@@ -17,6 +17,62 @@ import { AudioService } from "@/services/audioService";
 
 // Khoảng bù trừ thời gian mili-giây giúp khớp lời với tiếng chính xác hơn
 const LYRICS_OFFSET_MS = 350;
+
+// Định dạng thời gian dạng mili-giây sang định dạng chuỗi hiển thị mm:ss
+const formatTimeMs = (ms: number): string => {
+  const totalSeconds = Math.floor(ms / 1000);
+  const mins = Math.floor(totalSeconds / 60);
+  const secs = totalSeconds % 60;
+  return `${mins < 10 ? "0" : ""}${mins}:${secs < 10 ? "0" : ""}${secs}`;
+};
+
+interface LyricLineItemProps {
+  item: {
+    id: string;
+    time: number;
+    text: string;
+  };
+  isActive: boolean;
+  onPress: (timeMs: number) => void;
+  formattedTime: string;
+}
+
+// Component phụ kết xuất từng dòng lyrics đơn lẻ và được tối ưu hóa chống render thừa bằng React.memo
+const LyricLineItem: React.FC<LyricLineItemProps> = React.memo(({
+  item,
+  isActive,
+  onPress,
+  formattedTime,
+}) => {
+  return (
+    <TouchableOpacity
+      onPress={() => onPress(item.time)}
+      activeOpacity={0.7}
+      style={styles.lineTouch}
+    >
+      <View style={styles.lineContent}>
+        <Text style={[styles.timeTag, isActive && styles.activeTimeTag]}>
+          {formattedTime}
+        </Text>
+        <Text
+          style={[
+            styles.lyricLineText,
+            isActive && styles.activeLineText,
+          ]}
+        >
+          {item.text}
+        </Text>
+      </View>
+    </TouchableOpacity>
+  );
+}, (prevProps, nextProps) => {
+  // Chỉ render lại nếu trạng thái active thay đổi hoặc dữ liệu bài hát thay đổi
+  return prevProps.isActive === nextProps.isActive &&
+    prevProps.item.time === nextProps.item.time &&
+    prevProps.item.text === nextProps.item.text;
+});
+
+LyricLineItem.displayName = "LyricLineItem";
 
 // Component hiển thị danh sách lời bài hát tương tác dạng bản ghi có mốc thời gian
 export const LyricsView: React.FC = () => {
@@ -43,7 +99,7 @@ export const LyricsView: React.FC = () => {
     return currentLyrics?.syncedLyrics ? parseLrc(currentLyrics.syncedLyrics) : [];
   }, [currentLyrics?.syncedLyrics]);
 
-  // Xác định dòng lyrics hiện tại dựa theo tiến trình thời gian nhạc thực tế
+  // Xác định dòng lyrics hiện tại dựa theo tiến trình thời gian nhạc thực tế dạng số thực
   const activeIndex = useMemo(() => {
     if (parsedLines.length === 0) return -1;
     const ms = progress * 1000 + LYRICS_OFFSET_MS;
@@ -64,21 +120,13 @@ export const LyricsView: React.FC = () => {
     }
   }, [activeIndex, parsedLines.length]);
 
-  // Xử lý tua nhạc tới vị trí thời gian của câu hát được chọn
-  const handleLinePress = (timeMs: number) => {
+  // Xử lý tua nhạc tới vị trí thời gian của câu hát được chọn và phát rung xúc giác nhẹ
+  const handleLinePress = useCallback((timeMs: number) => {
     const seconds = timeMs / 1000;
     setProgress(seconds);
     AudioService.getInstance().seekTo(seconds).catch(() => {});
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
-  };
-
-  // Định dạng thời gian dạng mili-giây sang định dạng mm:ss để hiển thị trên nhãn thời gian
-  const formatTimeMs = (ms: number): string => {
-    const totalSeconds = Math.floor(ms / 1000);
-    const mins = Math.floor(totalSeconds / 60);
-    const secs = totalSeconds % 60;
-    return `${mins < 10 ? "0" : ""}${mins}:${secs < 10 ? "0" : ""}${secs}`;
-  };
+  }, [setProgress]);
 
   // Trạng thái đang tải dữ liệu
   if (isLyricsLoading) {
@@ -119,25 +167,12 @@ export const LyricsView: React.FC = () => {
           renderItem={({ item, index }) => {
             const isActive = index === activeIndex;
             return (
-              <TouchableOpacity
-                onPress={() => handleLinePress(item.time)}
-                activeOpacity={0.7}
-                style={styles.lineTouch}
-              >
-                <View style={styles.lineContent}>
-                  <Text style={[styles.timeTag, isActive && styles.activeTimeTag]}>
-                    {formatTimeMs(item.time)}
-                  </Text>
-                  <Text
-                    style={[
-                      styles.lyricLineText,
-                      isActive && styles.activeLineText,
-                    ]}
-                  >
-                    {item.text}
-                  </Text>
-                </View>
-              </TouchableOpacity>
+              <LyricLineItem
+                item={item}
+                isActive={isActive}
+                onPress={handleLinePress}
+                formattedTime={formatTimeMs(item.time)}
+              />
             );
           }}
         />

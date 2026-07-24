@@ -12,12 +12,12 @@ import {
 import { Feather, Ionicons } from "@expo/vector-icons";
 import { COLORS } from "@/constants/Colors";
 import { PLACEHOLDER_IMAGES } from "@/constants/Images";
-import { Album } from "@/types";
+import { Playlist } from "@/types";
 import {formatDuration} from '@/utils/format'
 
 // Định nghĩa giao diện cho các tham số đầu vào của component AlbumResultItem
 interface AlbumResultItemProps {
-  album: Album;
+  album: Playlist;
   variant: "horizontal" | "vertical";
   onPress: () => void;
   duration?: string | number;

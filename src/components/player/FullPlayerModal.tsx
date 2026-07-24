@@ -18,7 +18,8 @@ import * as Haptics from "expo-haptics";
 
 import { COLORS } from "@/constants/Colors";
 import { usePlayerStore } from "@/store/playerStore";
-import { CDSpin, LyricsModal } from "@/components/player";
+import { CDSpin } from "./CDSpin";
+import { LyricsModal } from "./LyricsModal";
 import { AudioService } from "@/services/audioService";
 import { formatArtistNames } from "@/utils/artist";
 import { usePlaylistStore } from "@/store/playlistStore";

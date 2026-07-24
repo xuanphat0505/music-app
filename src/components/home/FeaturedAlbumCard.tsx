@@ -1,35 +1,59 @@
 import React from 'react';
 import { StyleSheet, Text, Image, TouchableOpacity } from 'react-native';
 import { COLORS } from '@/constants/Colors';
-import { Album } from '@/types';
+import { Playlist } from '@/types';
 
 interface FeaturedAlbumCardProps {
-  album: Album;
+  item: Playlist;
   onPress?: () => void;
 }
 
 // Thẻ hiển thị Album/Playlist nổi bật cuộn ngang trong danh sách phát
-export const FeaturedAlbumCard: React.FC<FeaturedAlbumCardProps> = ({ album, onPress }) => {
+// Sử dụng React.memo để tránh re-render không cần thiết khi store thay đổi
+export const FeaturedAlbumCard: React.FC<FeaturedAlbumCardProps> = React.memo(({ item, onPress }) => {
   const [imageError, setImageError] = React.useState(false);
   const defaultCover = "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=300";
   
-  // Nếu có lỗi tải ảnh hoặc không có ảnh bìa, dùng ảnh mặc định và không gán onError để tránh lặp vô hạn
-  const useDefault = imageError || !album.artwork || album.artwork.trim() === "";
+  // Trích xuất ảnh bìa phù hợp từ Playlist hợp nhất
+  const coverUri = item.artwork 
+    ? item.artwork 
+    : (item.coverUrls && item.coverUrls.length > 0 ? item.coverUrls[0] : "");
+
+  // Nếu có lỗi tải ảnh hoặc không có ảnh bìa, dùng ảnh mặc định
+  const useDefault = imageError || !coverUri || coverUri.trim() === "";
+
+  // Lấy chuỗi mô tả phụ đề (Tên nghệ sĩ cho Album, mô tả hoặc số bài hát cho Playlist)
+  const getSubtitle = () => {
+    if (item.artist) {
+      const artist = item.artist;
+      return typeof artist === "string" ? artist : artist?.name || "Unknown Artist";
+    } else {
+      return item.description || `${item.songs?.length || 0} bài hát`;
+    }
+  };
 
   return (
     <TouchableOpacity style={styles.container} activeOpacity={0.8} onPress={onPress}>
       <Image
-        source={{ uri: useDefault ? defaultCover : album.artwork }}
+        source={{ uri: useDefault ? defaultCover : coverUri }}
         style={styles.cover}
         onError={useDefault ? undefined : () => setImageError(true)}
       />
-      <Text style={styles.title} numberOfLines={1}>{album.title}</Text>
+      <Text style={styles.title} numberOfLines={1}>{item.title}</Text>
       <Text style={styles.subtitle} numberOfLines={1}>
-        {typeof album.artist === "string" ? album.artist : album.artist?.name}
+        {getSubtitle()}
       </Text>
     </TouchableOpacity>
   );
-};
+}, (prevProps, nextProps) => {
+  // Chỉ render lại nếu item thay đổi
+  return prevProps.item._id === nextProps.item._id &&
+    prevProps.item.title === nextProps.item.title &&
+    prevProps.item.artwork === nextProps.item.artwork &&
+    prevProps.item.coverUrls?.[0] === nextProps.item.coverUrls?.[0];
+});
+
+FeaturedAlbumCard.displayName = 'FeaturedAlbumCard';
 
 const styles = StyleSheet.create({
   container: {
@@ -56,5 +80,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter',
   },
 });
+
 export default FeaturedAlbumCard;
 

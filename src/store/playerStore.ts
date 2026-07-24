@@ -82,11 +82,12 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
 
   // Hàm tải lời bài hát bất đồng bộ từ Server và lưu vào cache của store
   fetchLyrics: async (songId) => {
+    if (!songId) return; // Bảo vệ tránh gọi API với ID rỗng
     set({ isLyricsLoading: true, currentLyrics: null });
     try {
       const response = await musicApi.getSongLyrics(songId);
-      // Gán trực tiếp vì API wrapper đã bóc tách thuộc tính data từ trước
-      set({ currentLyrics: response, isLyricsLoading: false });
+      // Gán trực tiếp và dùng fallback để đảm bảo currentLyrics luôn là object không null
+      set({ currentLyrics: response || { lyrics: "", syncedLyrics: "" }, isLyricsLoading: false });
     } catch {
       // Đặt giá trị rỗng để tránh vòng lặp gọi API vô hạn khi xảy ra lỗi kết nối
       set({ currentLyrics: { lyrics: "", syncedLyrics: "" }, isLyricsLoading: false });

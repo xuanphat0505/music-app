@@ -89,10 +89,10 @@ export const LyricsView: React.FC = () => {
 
   // Tự động gọi API lấy lyrics nếu chưa có sẵn trong store
   useEffect(() => {
-    if (currentTrack && !currentLyrics && !isLyricsLoading) {
+    if (currentTrack?._id && !currentLyrics && !isLyricsLoading) {
       fetchLyrics(currentTrack._id).catch(() => {});
     }
-  }, [currentTrack, currentLyrics, isLyricsLoading, fetchLyrics]);
+  }, [currentTrack?._id, currentLyrics, isLyricsLoading, fetchLyrics]);
 
   // Phân tích cú pháp chuỗi LRC thô sang mảng đối tượng câu hát kèm mốc thời gian
   const parsedLines = useMemo(() => {

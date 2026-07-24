@@ -20,11 +20,12 @@ import {
 import { useTrendingSongs } from "@/hooks/useSongs";
 import { useAlbums } from "@/hooks/useAlbums";
 import { usePlaylistStore } from "@/store/playlistStore";
+import { usePullToRefresh } from "@/hooks/usePullToRefresh";
 
 // Giao diện chính của màn hình trang Home hiển thị các album và bài hát được cá nhân hóa
 export default function HomeScreen() {
-  const { songs, isLoading: isLoadingSongs } = useTrendingSongs(10);
-  const { albums, isLoading: isLoadingAlbums } = useAlbums();
+  const { songs, isLoading: isLoadingSongs, refetch: refetchSongs } = useTrendingSongs(10);
+  const { albums, isLoading: isLoadingAlbums, refresh: refreshAlbums } = useAlbums();
   const { playlists, fetchPlaylists } = usePlaylistStore();
   const isFocused = useIsFocused();
 
@@ -34,6 +35,15 @@ export default function HomeScreen() {
       fetchPlaylists().catch(() => {});
     }
   }, [isFocused, fetchPlaylists]);
+
+  // Hook quản lý tính năng kéo để làm mới (Pull to Refresh) dùng chung
+  const { refreshControl } = usePullToRefresh(async () => {
+    await Promise.all([
+      refetchSongs(),
+      refreshAlbums(),
+      fetchPlaylists(),
+    ]);
+  });
 
   // Trộn lẫn hiển thị cả Playlists của người dùng cùng với các Albums hệ thống
   const combinedItems = React.useMemo(() => {
@@ -46,6 +56,7 @@ export default function HomeScreen() {
       <ScrollView
         contentContainerStyle={styles.scrollContainer}
         showsVerticalScrollIndicator={false}
+        refreshControl={refreshControl}
       >
         <Header />
 

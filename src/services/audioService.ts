@@ -124,7 +124,7 @@ export class AudioService {
             Authorization: `Bearer ${token}`,
           },
         },
-        { updateInterval: 500 },
+        { updateInterval: 100 },
       );
 
       this.sound = player;
@@ -203,7 +203,7 @@ export class AudioService {
       return;
     }
 
-    const progressSeconds = Math.floor(status.currentTime);
+    const progressSeconds = status.currentTime;
     const durationSeconds = Math.floor(status.duration ? status.duration : 0);
 
     setProgress(progressSeconds);

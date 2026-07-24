@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   View,
   Text,
@@ -8,6 +8,8 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useIsFocused } from "@react-navigation/native";
+
 import { COLORS } from "@/constants/Colors";
 import { Header } from "@/components/common";
 import {
@@ -17,11 +19,26 @@ import {
 } from "@/components/home";
 import { useTrendingSongs } from "@/hooks/useSongs";
 import { useAlbums } from "@/hooks/useAlbums";
+import { usePlaylistStore } from "@/store/playlistStore";
 
 // Giao diện chính của màn hình trang Home hiển thị các album và bài hát được cá nhân hóa
 export default function HomeScreen() {
   const { songs, isLoading: isLoadingSongs } = useTrendingSongs(10);
   const { albums, isLoading: isLoadingAlbums } = useAlbums();
+  const { playlists, fetchPlaylists } = usePlaylistStore();
+  const isFocused = useIsFocused();
+
+  // Gọi tải danh sách phát khi màn hình được truy cập (focus)
+  useEffect(() => {
+    if (isFocused) {
+      fetchPlaylists().catch(() => {});
+    }
+  }, [isFocused, fetchPlaylists]);
+
+  // Trộn lẫn hiển thị cả Playlists của người dùng cùng với các Albums hệ thống
+  const combinedItems = React.useMemo(() => {
+    return [...playlists, ...albums];
+  }, [playlists, albums]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -48,9 +65,13 @@ export default function HomeScreen() {
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.horizontalScroll}
           >
-            {albums.map((album) => (
-              <FeaturedAlbumCard key={album._id} album={album} />
-            ))}
+            {combinedItems.map((item) => {
+              const isAlbum = 'artwork' in item;
+              const uniqueKey = `${isAlbum ? 'album' : 'playlist'}-${item._id}`;
+              return (
+                <FeaturedAlbumCard key={uniqueKey} item={item} />
+              );
+            })}
           </ScrollView>
         )}
 

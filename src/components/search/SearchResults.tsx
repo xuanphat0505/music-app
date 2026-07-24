@@ -13,7 +13,7 @@ import { COLORS } from "@/constants/Colors";
 import { usePlayerStore } from "@/store/playerStore";
 import { SongItem } from "@/components/common/SongItem";
 import * as Haptics from "expo-haptics";
-import { Track, Artist, Album, RecentSearchEntity } from "@/types";
+import { Track, Artist, Playlist, RecentSearchEntity } from "@/types";
 import { FilterChips, ArtistResultItem, AlbumResultItem } from "./results";
 import { formatArtistNames } from "@/utils/artist";
 import { useLibrarySongs } from "@/hooks/useLibrarySongs";
@@ -24,7 +24,7 @@ import { showSuccess } from "@/utils/toast";
 interface SearchResultsProps {
   songs: Track[];
   artists: Artist[];
-  albums: Album[];
+  albums: Playlist[];
   searchQuery: string;
   isLoading?: boolean;
   onItemSelect?: (item: RecentSearchEntity) => void;
@@ -116,7 +116,7 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
   };
 
   // Xử lý khi nhấn chọn album
-  const handleSelectAlbum = (album: Album) => {
+  const handleSelectAlbum = (album: Playlist) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
     const artistName = typeof album.artist === "string" ? album.artist : album.artist?.name;
     if (onItemSelect) {
@@ -125,7 +125,7 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
         type: "album",
         title: album.title,
         subtitle: `Album • ${artistName || "Unknown Artist"}`,
-        imageUrl: album.artwork,
+        imageUrl: album.artwork || album.coverUrls?.[0] || "",
         data: album,
       });
     }

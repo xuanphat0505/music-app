@@ -74,7 +74,11 @@ export const PRESET_STYLES: { colors: [string, string]; coverUrl: string }[] = [
 ];
 
 // Hàm băm tên thể loại nhạc để tự động gán gradient và hình ảnh bắt mắt cố định
+// Hỗ trợ kiểm tra dữ liệu đầu vào hợp lệ tránh xảy ra lỗi null
 export const getGenreStyle = (genre: string) => {
+  if (!genre || typeof genre !== "string") {
+    return PRESET_STYLES[0];
+  }
   const normalized = genre.toLowerCase().trim();
   if (GENRE_STYLE_MAP[normalized]) {
     return GENRE_STYLE_MAP[normalized];

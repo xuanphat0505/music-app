@@ -1,6 +1,6 @@
 import React from "react";
 import { Dimensions, StyleSheet, View } from "react-native";
-import { PlaylistCard, AddPlaylistCard } from "./PlaylistCard";
+import { PlaylistCard, AddPlaylistCard } from "@/components/common";
 import { Playlist } from "@/types";
 
 interface PlaylistsGridProps {

@@ -25,27 +25,22 @@ export interface Track {
   streamUrl?: string;
 }
 
-// Thực thể danh sách phát
+// Thực thể danh sách phát hoặc album nhạc thống nhất
 export interface Playlist {
   _id: string;
   title: string;
-  description: string;
-  coverUrls: string[];
+  description?: string;
+  coverUrls?: string[];
   songs?: (Track | string)[];
   user?: string;
   createdAt?: string;
   updatedAt?: string;
-}
-
-// Thực thể album nhạc
-export interface Album {
-  _id: string;
+  
+  // Thuộc tính tương thích ngược từ Album cũ
   spotifyId?: string;
-  title: string;
-  artist: Artist | string;
+  artist?: Artist | string;
   genre?: string;
-  artwork: string;
-  songs?: Track[];
+  artwork?: string;
 }
 
 // Thực thể thể loại nhạc khám phá

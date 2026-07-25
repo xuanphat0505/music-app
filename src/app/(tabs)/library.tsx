@@ -7,7 +7,6 @@ import {
   StatusBar,
   Alert,
   ActivityIndicator,
-  RefreshControl,
   View,
   Text,
   NativeSyntheticEvent,
@@ -32,6 +31,7 @@ import { Playlist, Track } from "@/types";
 import { useLibrarySongs } from "@/hooks/useLibrarySongs";
 import { showSuccess } from "@/utils/toast";
 import { formatArtistNames } from "@/utils/artist";
+import { usePullToRefresh } from "@/hooks/usePullToRefresh";
 
 // Màn hình Thư viện hiển thị danh sách phát cá nhân và các bài hát đã lưu với phân trang vô tận
 export default function LibraryScreen() {
@@ -65,6 +65,14 @@ export default function LibraryScreen() {
     refreshLibrary,
     fetchNextPage,
   } = useLibrarySongs();
+
+  // Hook quản lý tính năng kéo để làm mới (Pull to Refresh) dùng chung
+  const { refreshControl } = usePullToRefresh(async () => {
+    await Promise.all([
+      refreshLibrary(true),
+      fetchPlaylists(),
+    ]);
+  });
 
   // Tự động làm mới danh sách phát và danh sách bài hát khi chuyển tới màn hình Library
   useFocusEffect(
@@ -261,31 +269,13 @@ export default function LibraryScreen() {
           onScroll={handleScroll}
           scrollEventThrottle={16}
           showsVerticalScrollIndicator={false}
-          refreshControl={
-            <RefreshControl
-              refreshing={isLoadingLibrary}
-              onRefresh={() => {
-                refreshLibrary(true);
-                fetchPlaylists();
-              }}
-              tintColor={COLORS.PRIMARY}
-            />
-          }
+          refreshControl={refreshControl}
         />
       ) : (
         <ScrollView
           contentContainerStyle={styles.scrollContainer}
           showsVerticalScrollIndicator={false}
-          refreshControl={
-            <RefreshControl
-              refreshing={isLoadingLibrary}
-              onRefresh={() => {
-                refreshLibrary(true);
-                fetchPlaylists();
-              }}
-              tintColor={COLORS.PRIMARY}
-            />
-          }
+          refreshControl={refreshControl}
         >
           {renderHeader()}
           <PlaylistsGrid

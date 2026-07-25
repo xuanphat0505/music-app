@@ -25,6 +25,7 @@ import { useArtists } from "@/hooks/useArtists";
 import { useAlbums } from "@/hooks/useAlbums";
 import { useRecentSearches } from "@/hooks/useRecentSearches";
 import { useDebounce } from "@/hooks/useDebounce";
+import { usePullToRefresh } from "@/hooks/usePullToRefresh";
 import { usePlayerStore } from "@/store/playerStore";
 import { getGenreStyle } from "@/utils/genre";
 import { Category, RecentSearchEntity, Artist } from "@/types";
@@ -84,7 +85,12 @@ export default function SearchScreen() {
     setSearchQuery(result);
   };
   // Lấy danh sách thể loại nhạc động từ cơ sở dữ liệu
-  const { genres, isLoading: isGenresLoading } = useGenresCount();
+  const { genres, isLoading: isGenresLoading, refetch: refetchGenres } = useGenresCount();
+
+  // Hook quản lý tính năng kéo để làm mới (Pull to Refresh) dùng chung
+  const { refreshControl } = usePullToRefresh(async () => {
+    await refetchGenres();
+  });
 
   // Trộn ngẫu nhiên danh mục nhạc và giới hạn hiển thị tối đa 5 phần tử mỗi khi màn hình được truy cập hoặc dữ liệu thay đổi
   useEffect(() => {
@@ -171,6 +177,7 @@ export default function SearchScreen() {
           <ScrollView
             contentContainerStyle={styles.scrollContainer}
             showsVerticalScrollIndicator={false}
+            refreshControl={refreshControl}
           >
             {/* Thanh tìm kiếm */}
             <SearchBar

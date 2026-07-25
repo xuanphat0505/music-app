@@ -11,6 +11,7 @@ import {
 } from "@/components/profile";
 import { SettingItem, Artist } from "@/types";
 import { useAuth } from "@/hooks/useAuth";
+import { usePullToRefresh } from "@/hooks/usePullToRefresh";
 
 const MOCK_TOP_ARTISTS: Artist[] = [
   {
@@ -49,9 +50,14 @@ const MOCK_TOP_ARTISTS: Artist[] = [
 
 // Màn hình thông tin cá nhân hiển thị chi tiết hồ sơ người dùng và các thiết lập nâng cao
 export default function ProfileScreen() {
-  const { user, logout } = useAuth();
+  const { user, logout, initialize } = useAuth();
   const [audioQuality, setAudioQuality] = useState("Lossless");
   const [cacheSize, setCacheSize] = useState("240 MB");
+
+  // Hook quản lý tính năng kéo để làm mới (Pull to Refresh) dùng chung
+  const { refreshControl } = usePullToRefresh(async () => {
+    await initialize();
+  });
 
   // Hàm kích hoạt rung phản hồi nhẹ khi tương tác nút
   const triggerHaptic = () => {
@@ -201,6 +207,7 @@ export default function ProfileScreen() {
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
+        refreshControl={refreshControl}
       >
         {/* Phần đầu trang hồ sơ */}
         <ProfileHeader

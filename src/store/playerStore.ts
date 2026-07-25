@@ -83,6 +83,11 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
   // Hàm tải lời bài hát bất đồng bộ từ Server và lưu vào cache của store
   fetchLyrics: async (songId) => {
     if (!songId) return; // Bảo vệ tránh gọi API với ID rỗng
+    const state = get();
+    // Bỏ qua nếu đang trong quá trình tải hoặc đã có lyrics của đúng bài hát này để tránh vòng lặp vô hạn
+    if (state.isLyricsLoading) return;
+    if (state.currentLyrics && state.currentTrack?._id === songId) return;
+
     set({ isLyricsLoading: true, currentLyrics: null });
     try {
       const response = await musicApi.getSongLyrics(songId);

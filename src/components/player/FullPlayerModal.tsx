@@ -6,7 +6,6 @@ import {
   Image,
   TouchableOpacity,
   Modal,
-  Alert,
   ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -42,14 +41,17 @@ export const FullPlayerModal: React.FC = () => {
     duration,
     isBuffering,
     isFullPlayerVisible,
+    isShuffle,
     togglePlay,
     setProgress,
     setIsFullPlayerVisible,
+    playNextTrack,
+    playPrevTrack,
+    toggleShuffle,
   } = usePlayerStore();
 
   const [isDragging, setIsDragging] = useState(false);
   const [localProgress, setLocalProgress] = useState(0);
-  const [isShuffle, setIsShuffle] = useState(false);
   const [isRepeat, setIsRepeat] = useState(false);
   const [showLyrics, setShowLyrics] = useState(false);
 
@@ -75,10 +77,10 @@ export const FullPlayerModal: React.FC = () => {
 
   // Đồng bộ tiến trình bài hát từ store khi người dùng không kéo thanh trượt
   useEffect(() => {
-    if (!isDragging) {
+    if (!isDragging && localProgress !== progress) {
       setLocalProgress(progress);
     }
-  }, [progress, isDragging]);
+  }, [progress, isDragging, localProgress]);
 
   if (!currentTrack) return null;
 
@@ -96,13 +98,17 @@ export const FullPlayerModal: React.FC = () => {
   // Hàm xử lý khi người dùng nhấn nút chuyển tiếp hoặc quay lại bài hát
   const handleTrackNavigation = (direction: "next" | "prev") => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
-    Alert.alert("Play Queue", `Navigating to ${direction} track`);
+    if (direction === "next") {
+      playNextTrack();
+    } else {
+      playPrevTrack();
+    }
   };
 
   // Hàm xử lý bật/tắt nút Shuffle
   const handleToggleShuffle = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
-    setIsShuffle(!isShuffle);
+    toggleShuffle();
   };
 
   // Hàm xử lý bật/tắt nút Repeat

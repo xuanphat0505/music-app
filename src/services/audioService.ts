@@ -16,6 +16,7 @@ export class AudioService {
   private sound: AudioPlayer | null = null;
   private statusSubscription: any = null;
   private isAudioModeSet = false;
+  private loadSessionId = 0;
 
   // Lấy thực thể duy nhất của lớp dịch vụ theo mẫu thiết kế Singleton
   public static getInstance(): AudioService {
@@ -97,11 +98,12 @@ export class AudioService {
 
   // Tải luồng nhạc trực tuyến từ máy chủ và bắt đầu phát nhạc qua trình phát
   public async loadAndPlay(track: Track) {
+    const currentSession = ++this.loadSessionId;
     try {
       const { setIsBuffering } = usePlayerStore.getState();
       setIsBuffering(true);
-      await this.setupAudioMode();
 
+      // Giải phóng ngay lập tức trình phát và subscription cũ nếu đang tồn tại
       if (this.statusSubscription) {
         this.statusSubscription.remove();
         this.statusSubscription = null;
@@ -113,6 +115,11 @@ export class AudioService {
         this.sound.remove();
         this.sound = null;
       }
+
+      await this.setupAudioMode();
+
+      // Kiểm tra nếu có phiên nạp bài hát mới hơn thì hủy phiên cũ này ngay
+      if (currentSession !== this.loadSessionId) return;
 
       const token = getAccessToken();
       const streamUri = `${BASE_URL}/songs/stream/${track.youtubeVideoId || track.spotifyId}`;
@@ -127,6 +134,15 @@ export class AudioService {
         { updateInterval: 100 },
       );
 
+      // Kiểm tra lại phiên nạp sau khi khởi tạo player
+      if (currentSession !== this.loadSessionId) {
+        try {
+          player.pause();
+          player.remove();
+        } catch {}
+        return;
+      }
+
       this.sound = player;
 
       this.statusSubscription = player.addListener(
@@ -138,9 +154,11 @@ export class AudioService {
 
       musicApi.playSong(track._id!).catch(() => {});
     } catch (error) {
-      console.error("[AudioService] Lỗi khi loadAndPlay:", error);
-      const { setIsBuffering } = usePlayerStore.getState();
-      setIsBuffering(false);
+      if (currentSession === this.loadSessionId) {
+        console.error("[AudioService] Lỗi khi loadAndPlay:", error);
+        const { setIsBuffering } = usePlayerStore.getState();
+        setIsBuffering(false);
+      }
     }
   }
 
@@ -216,19 +234,26 @@ export class AudioService {
     }
   }
 
-  // Xử lý thiết lập lại trạng thái khi bài hát phát hết thời lượng
+  // Xử lý tự động phát bài hát tiếp theo khi bài hát phát hết thời lượng
   private async handlePlaybackFinished() {
-    const { togglePlay, setProgress, setIsBuffering } =
+    const { queue, playNextTrack, togglePlay, setProgress, setIsBuffering } =
       usePlayerStore.getState();
+
     setIsBuffering(false);
     setProgress(0);
-    togglePlay();
-    if (this.sound) {
-      try {
-        await this.sound.seekTo(0);
-        this.sound.pause();
-      } catch {
-        // bỏ qua lỗi dừng phát nhạc
+
+    // Nếu trong hàng đợi còn bài hát thì tự động chuyển bài tiếp theo mượt mà
+    if (queue && queue.length > 0) {
+      playNextTrack();
+    } else {
+      togglePlay();
+      if (this.sound) {
+        try {
+          await this.sound.seekTo(0);
+          this.sound.pause();
+        } catch {
+          // bỏ qua lỗi dừng phát nhạc
+        }
       }
     }
   }

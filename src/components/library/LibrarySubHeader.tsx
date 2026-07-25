@@ -1,16 +1,18 @@
 import React from "react";
-import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { COLORS } from "@/constants/Colors";
 import { Track } from "@/types";
+
+import { usePlayerStore } from "@/store/playerStore";
 
 interface LibrarySubHeaderProps {
   activeTab: "playlists" | "songs";
   playlistsCount: number;
   songsCount: number;
   tracks: Track[];
-  playTrack: (track: Track) => void;
   triggerHaptic: () => void;
+  onOpenSortModal: () => void;
 }
 
 // Component hiển thị phần thông tin chi tiết đầu danh mục (Sub-header) của Thư viện
@@ -19,9 +21,17 @@ export const LibrarySubHeader: React.FC<LibrarySubHeaderProps> = ({
   playlistsCount,
   songsCount,
   tracks,
-  playTrack,
   triggerHaptic,
+  onOpenSortModal,
 }) => {
+  const playAll = usePlayerStore((state) => state.playAll);
+  const shufflePlay = usePlayerStore((state) => state.shufflePlay);
+  const isShuffle = usePlayerStore((state) => state.isShuffle);
+  const isPlaying = usePlayerStore((state) => state.isPlaying);
+
+  // Nút Play chỉ được highlight khi đang phát nhạc và không ở chế độ Shuffle
+  const isPlayActive = isPlaying && !isShuffle;
+
   return (
     <View style={styles.subHeaderContainer}>
       <View style={styles.subHeaderLeft}>
@@ -38,47 +48,60 @@ export const LibrarySubHeader: React.FC<LibrarySubHeaderProps> = ({
       <View style={styles.subHeaderRight}>
         {activeTab === "songs" && (
           <>
+            {/* Nút Bộ lọc & Sắp xếp */}
             <TouchableOpacity
               style={styles.circleActionButton}
               onPress={() => {
                 triggerHaptic();
-                Alert.alert(
-                  "Sort & Filter",
-                  "Chức năng sắp xếp và bộ lọc đang được phát triển.",
-                );
+                onOpenSortModal();
               }}
               activeOpacity={0.7}
             >
               <Feather name="sliders" size={18} color="#ffffff" />
             </TouchableOpacity>
+
+            {/* Nút Phát ngẫu nhiên (chỉ highlight khi isShuffle = true) */}
             <TouchableOpacity
-              style={styles.circleActionButton}
+              style={
+                isShuffle
+                  ? styles.highlightActionButton
+                  : styles.circleActionButton
+              }
               onPress={() => {
                 triggerHaptic();
                 if (tracks.length > 0) {
-                  const randomIdx = Math.floor(Math.random() * tracks.length);
-                  playTrack(tracks[randomIdx]);
+                  shufflePlay(tracks);
                 }
               }}
-              activeOpacity={0.7}
+              activeOpacity={0.8}
             >
-              <Feather name="shuffle" size={18} color="#ffffff" />
+              <Feather
+                name="shuffle"
+                size={18}
+                color={isShuffle ? "#000000" : "#ffffff"}
+              />
             </TouchableOpacity>
+
+            {/* Nút Phát tất cả (chỉ highlight khi isPlayActive = true) */}
             <TouchableOpacity
-              style={styles.playActionButton}
+              style={
+                isPlayActive
+                  ? styles.highlightActionButton
+                  : styles.circleActionButton
+              }
               onPress={() => {
                 triggerHaptic();
                 if (tracks.length > 0) {
-                  playTrack(tracks[0]);
+                  playAll(tracks, 0);
                 }
               }}
               activeOpacity={0.8}
             >
               <Feather
                 name="play"
-                size={20}
-                color="#000000"
-                style={{ marginLeft: 2 }}
+                size={18}
+                color={isPlayActive ? "#000000" : "#ffffff"}
+                style={{ marginLeft: isPlayActive ? 2 : 1 }}
               />
             </TouchableOpacity>
           </>
@@ -147,6 +170,15 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 6,
+    elevation: 3,
+  },
+  highlightActionButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: "#ffffff",
+    alignItems: "center",
+    justifyContent: "center",
     elevation: 3,
   },
 });

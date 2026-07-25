@@ -6,3 +6,4 @@ export { LibrarySubHeader } from "./LibrarySubHeader";
 export { PlaylistsGrid } from "./PlaylistsGrid";
 export { SongsList } from "./SongsList";
 export { AddToPlaylistModal } from "./AddToPlaylistModal";
+export { SortOptionModal } from "./SortOptionModal";

@@ -12,6 +12,12 @@ interface PlayerState {
   isFullPlayerVisible: boolean;
   currentLyrics: { lyrics?: string; syncedLyrics?: string } | null;
   isLyricsLoading: boolean;
+
+  // Hàng đợi phát nhạc và các cài đặt phát nhạc toàn cục
+  queue: Track[];
+  currentIndex: number;
+  isShuffle: boolean;
+
   playTrack: (track: Track | any) => void;
   togglePlay: () => void;
   setProgress: (progress: number) => void;
@@ -21,6 +27,13 @@ interface PlayerState {
   setIsBuffering: (isBuffering: boolean) => void;
   fetchLyrics: (songId: string) => Promise<void>;
   resetLyrics: () => void;
+
+  // Phương thức điều phối hàng đợi tái sử dụng toàn cục
+  playAll: (tracks: Track[], startIndex?: number) => void;
+  shufflePlay: (tracks: Track[]) => void;
+  playNextTrack: () => void;
+  playPrevTrack: () => void;
+  toggleShuffle: () => void;
 }
 
 // Khởi tạo kho lưu trữ trạng thái phát nhạc toàn cục của ứng dụng giúp điều phối hoạt động phát nhạc
@@ -34,6 +47,11 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
   isFullPlayerVisible: false,
   currentLyrics: null,
   isLyricsLoading: false,
+
+  // Trạng thái khởi tạo hàng đợi
+  queue: [],
+  currentIndex: -1,
+  isShuffle: false,
 
   // Hàm kích hoạt phát một bài hát mới và thiết lập lại các thông số thời gian cùng danh sách phát gần đây
   playTrack: (track) => {
@@ -62,23 +80,102 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
     });
   },
 
+  // Phát toàn bộ danh sách nhạc từ vị trí bắt đầu
+  playAll: (tracks, startIndex = 0) => {
+    if (!tracks || tracks.length === 0) return;
+    const index = Math.max(0, Math.min(startIndex, tracks.length - 1));
+    const targetTrack = tracks[index];
+
+    set({
+      queue: tracks,
+      currentIndex: index,
+    });
+    get().playTrack(targetTrack);
+  },
+
+  // Phát ngẫu nhiên xáo trộn toàn bộ danh sách nhạc
+  shufflePlay: (tracks) => {
+    if (!tracks || tracks.length === 0) return;
+    const shuffled = [...tracks].sort(() => Math.random() - 0.5);
+    set({
+      queue: shuffled,
+      currentIndex: 0,
+      isShuffle: true,
+    });
+    get().playTrack(shuffled[0]);
+  },
+
+  // Chuyển sang bài hát tiếp theo trong hàng đợi
+  playNextTrack: () => {
+    const { queue, currentIndex, isShuffle } = get();
+    if (!queue || queue.length === 0) return;
+
+    let nextIndex: number;
+    if (isShuffle) {
+      nextIndex = Math.floor(Math.random() * queue.length);
+    } else {
+      nextIndex = currentIndex + 1;
+      if (nextIndex >= queue.length) {
+        nextIndex = 0; // Quay lại bài đầu tiên khi hết danh sách
+      }
+    }
+
+    const nextTrack = queue[nextIndex];
+    if (nextTrack) {
+      set({ currentIndex: nextIndex });
+      get().playTrack(nextTrack);
+    }
+  },
+
+  // Lùi lại bài hát trước đó trong hàng đợi
+  playPrevTrack: () => {
+    const { queue, currentIndex } = get();
+    if (!queue || queue.length === 0) return;
+
+    let prevIndex = currentIndex - 1;
+    if (prevIndex < 0) {
+      prevIndex = queue.length - 1; // Quay về bài cuối cùng khi lùi quá đầu danh sách
+    }
+
+    const prevTrack = queue[prevIndex];
+    if (prevTrack) {
+      set({ currentIndex: prevIndex });
+      get().playTrack(prevTrack);
+    }
+  },
+
+  // Bật hoặc tắt chế độ phát xáo trộn
+  toggleShuffle: () => set((state) => ({ isShuffle: !state.isShuffle })),
+
   // Hàm chuyển đổi trạng thái tạm dừng hoặc tiếp tục phát nhạc hiện tại
   togglePlay: () => set((state) => ({ isPlaying: !state.isPlaying })),
 
-  // Hàm cập nhật tiến trình phát nhạc hiện tại theo thời gian thực
-  setProgress: (progress) => set({ progress }),
+  // Hàm cập nhật tiến trình phát nhạc hiện tại theo thời gian thực (chỉ update khi thay đổi > 0.05s)
+  setProgress: (progress) => {
+    if (Math.abs(get().progress - progress) > 0.05) {
+      set({ progress });
+    }
+  },
 
-  // Hàm cập nhật tổng thời lượng của bài hát đang phát
-  setDuration: (duration) => set({ duration }),
+  // Hàm cập nhật tổng thời lượng của bài hát đang phát (chỉ update khi giá trị thay đổi)
+  setDuration: (duration) => {
+    if (get().duration !== duration) {
+      set({ duration });
+    }
+  },
 
   // Hàm cập nhật trạng thái hiển thị của trình phát nhạc lớn
   setIsFullPlayerVisible: (visible) => set({ isFullPlayerVisible: visible }),
 
   // Hàm dừng phát nhạc và đặt lại các trạng thái về ban đầu để đóng trình phát
-  stopTrack: () => set({ currentTrack: null, isPlaying: false, progress: 0, duration: 0, isBuffering: false, currentLyrics: null }),
+  stopTrack: () => set({ currentTrack: null, isPlaying: false, progress: 0, duration: 0, isBuffering: false, currentLyrics: null, queue: [], currentIndex: -1 }),
 
-  // Hàm cập nhật trạng thái đang tải hoặc buffering nhạc từ thiết bị native
-  setIsBuffering: (isBuffering) => set({ isBuffering }),
+  // Hàm cập nhật trạng thái đang tải hoặc buffering nhạc từ thiết bị native (chỉ update khi giá trị thay đổi)
+  setIsBuffering: (isBuffering) => {
+    if (get().isBuffering !== isBuffering) {
+      set({ isBuffering });
+    }
+  },
 
   // Hàm tải lời bài hát bất đồng bộ từ Server và lưu vào cache của store
   fetchLyrics: async (songId) => {

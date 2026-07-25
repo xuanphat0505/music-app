@@ -95,8 +95,8 @@ export default function HomeScreen() {
           <ActivityIndicator size="small" color={COLORS.PRIMARY} style={{ marginVertical: 20 }} />
         ) : (
           <View style={styles.songsList}>
-            {songs.map((song) => (
-              <TrendingSong key={song._id} song={song} />
+            {songs.map((song, index) => (
+              <TrendingSong key={song._id} song={song} allSongs={songs} index={index} />
             ))}
           </View>
         )}

@@ -30,7 +30,7 @@ export const ArtistDetail: React.FC<ArtistDetailProps> = ({
   artist,
   onBack,
 }) => {
-  const playTrack = usePlayerStore((state) => state.playTrack);
+  const playAll = usePlayerStore((state) => state.playAll);
   const [isFollowing, setIsFollowing] = useState(false);
   const { isSongInLibrary, toggleSong } = useLibrarySongs();
 
@@ -66,17 +66,17 @@ export const ArtistDetail: React.FC<ArtistDetailProps> = ({
     }
   };
 
-  // Xử lý khi nhấn phát nhạc và rung phản hồi nhẹ
-  const handlePlaySong = (track: Track) => {
+  // Xử lý khi nhấn phát nhạc và nạp danh sách bài hát của nghệ sĩ vào hàng đợi từ vị trí được chọn
+  const handlePlaySong = (track: Track, index: number) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
-    playTrack(track);
+    playAll(songs, index);
   };
 
-  // Xử lý phát tất cả danh sách bài hát của nghệ sĩ dưới dạng hàng đợi
+  // Xử lý phát tất cả danh sách bài hát của nghệ sĩ dưới dạng hàng đợi từ bài đầu tiên
   const handlePlayAll = () => {
     if (songs.length === 0) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
-    playTrack(songs[0]);
+    playAll(songs, 0);
   };
 
   // Xử lý bật tắt theo dõi nghệ sĩ kèm rung phản hồi
@@ -201,14 +201,14 @@ export const ArtistDetail: React.FC<ArtistDetailProps> = ({
           data={songs}
           keyExtractor={(item) => item._id}
           ListHeaderComponent={renderHeader}
-          renderItem={({ item }) => (
+          renderItem={({ item, index }) => (
             <View style={styles.songItemWrapper}>
               <SongItem
                 song={item}
                 subtitle={formatArtistNames(item.artists)}
                 duration={item.duration}
                 isAdded={isSongInLibrary(item._id)}
-                onPress={() => handlePlaySong(item)}
+                onPress={() => handlePlaySong(item, index)}
                 onAddPress={() => handleToggleLibrary(item)}
               />
             </View>

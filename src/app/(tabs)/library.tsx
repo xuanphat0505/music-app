@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from "react";
+import React, { useState, useCallback, useRef, useMemo } from "react";
 import { useFocusEffect } from "expo-router";
 import {
   StyleSheet,
@@ -20,11 +20,13 @@ import { COLORS } from "@/constants/Colors";
 import { Header, SongItem, ScrollToTopButton } from "@/components/common";
 import {
   CreatePlaylistModal,
-  AddToPlaylistModal,
+  PlaylistsGrid,
   LibraryTabs,
   LibrarySubHeader,
-  PlaylistsGrid,
+  AddToPlaylistModal,
+  SortOptionModal,
 } from "@/components/library";
+import { SortOptionValue } from "@/components/library/SortOptionModal";
 import { usePlayerStore } from "@/store/playerStore";
 import { usePlaylistStore } from "@/store/playlistStore";
 import { Playlist, Track } from "@/types";
@@ -47,6 +49,8 @@ export default function LibraryScreen() {
 
   const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
   const [activeTab, setActiveTab] = useState<"playlists" | "songs">("playlists");
+  const [sortBy, setSortBy] = useState<SortOptionValue>("recent");
+  const [isSortModalVisible, setIsSortModalVisible] = useState(false);
 
   const [selectedTrackForPlaylist, setSelectedTrackForPlaylist] =
     useState<Track | null>(null);
@@ -65,6 +69,23 @@ export default function LibraryScreen() {
     refreshLibrary,
     fetchNextPage,
   } = useLibrarySongs();
+
+  // Sắp xếp danh sách bài hát theo tiêu chí được chọn (Mới lưu, Tên bài hát, Tên ca sĩ)
+  const sortedLibrarySongs = useMemo(() => {
+    if (sortBy === "recent") return librarySongs;
+    const copy = [...librarySongs];
+    if (sortBy === "title") {
+      return copy.sort((a, b) => (a.title || "").localeCompare(b.title || ""));
+    }
+    if (sortBy === "artist") {
+      return copy.sort((a, b) => {
+        const nameA = formatArtistNames(a.artists);
+        const nameB = formatArtistNames(b.artists);
+        return nameA.localeCompare(nameB);
+      });
+    }
+    return copy;
+  }, [librarySongs, sortBy]);
 
   // Hook quản lý tính năng kéo để làm mới (Pull to Refresh) dùng chung
   const { refreshControl } = usePullToRefresh(async () => {
@@ -202,10 +223,10 @@ export default function LibraryScreen() {
       <LibrarySubHeader
         activeTab={activeTab}
         playlistsCount={playlists.length}
-        songsCount={librarySongs.length}
-        tracks={librarySongs}
-        playTrack={playTrack}
+        songsCount={sortedLibrarySongs.length}
+        tracks={sortedLibrarySongs}
         triggerHaptic={triggerHaptic}
+        onOpenSortModal={() => setIsSortModalVisible(true)}
       />
     </>
   );
@@ -254,7 +275,7 @@ export default function LibraryScreen() {
       {activeTab === "songs" ? (
         <FlatList
           ref={flatListRef}
-          data={librarySongs}
+          data={sortedLibrarySongs}
           keyExtractor={(item) => item._id}
           renderItem={renderSongItem}
           ListHeaderComponent={renderHeader}
@@ -318,6 +339,13 @@ export default function LibraryScreen() {
           setIsAddToPlaylistVisible(false);
           setIsCreateModalVisible(true);
         }}
+      />
+
+      <SortOptionModal
+        visible={isSortModalVisible}
+        currentSort={sortBy}
+        onSelect={setSortBy}
+        onClose={() => setIsSortModalVisible(false)}
       />
     </SafeAreaView>
   );

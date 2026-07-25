@@ -13,11 +13,14 @@ import { formatPlays } from "@/utils/format";
 
 interface TrendingSongProps {
   song: Track;
+  allSongs?: Track[];
+  index?: number;
 }
 
 // Component dòng hiển thị bài hát xu hướng cho phép phát nhanh, lưu thư viện và thêm vào playlist
-export const TrendingSong: React.FC<TrendingSongProps> = React.memo(({ song }) => {
+export const TrendingSong: React.FC<TrendingSongProps> = React.memo(({ song, allSongs, index = 0 }) => {
   const playTrack = usePlayerStore((state) => state.playTrack);
+  const playAll = usePlayerStore((state) => state.playAll);
   const { isSongInLibrary, toggleSong } = useLibrarySongs();
   const { createPlaylist, addSongToPlaylist } = usePlaylistStore();
 
@@ -47,7 +50,13 @@ export const TrendingSong: React.FC<TrendingSongProps> = React.memo(({ song }) =
         duration={song.duration}
         style={styles.rowMargin}
         isAdded={isSongInLibrary(song._id)}
-        onPress={() => playTrack(song)}
+        onPress={() => {
+          if (allSongs && allSongs.length > 0) {
+            playAll(allSongs, index);
+          } else {
+            playTrack(song);
+          }
+        }}
         onAddPress={() => {
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
           toggleSong(song);

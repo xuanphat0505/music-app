@@ -74,7 +74,6 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
         duration: track.duration,
         isBuffering: true,
         recentlyPlayed: updatedList,
-        isFullPlayerVisible: false,
         currentLyrics: null, // Reset lời bài hát cũ
       };
     });

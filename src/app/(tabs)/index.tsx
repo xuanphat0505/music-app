@@ -11,7 +11,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useIsFocused } from "@react-navigation/native";
 
 import { COLORS } from "@/constants/Colors";
-import { Header } from "@/components/common";
+import { Header, SongActions } from "@/components/common";
 import {
   FeaturedAlbumCard,
   TrendingSong,
@@ -87,8 +87,14 @@ export default function HomeScreen() {
         )}
 
         {/* Phần bài hát đang thịnh hành */}
-        <View style={styles.sectionHeader}>
+        <View style={styles.trendingHeader}>
           <Text style={styles.sectionTitle}>Trending Today</Text>
+          {!isLoadingSongs && songs.length > 0 && (
+            <SongActions
+              tracks={songs}
+              triggerHaptic={() => {}}
+            />
+          )}
         </View>
 
         {isLoadingSongs ? (
@@ -139,5 +145,12 @@ export const styles = StyleSheet.create({
   },
   songsList: {
     marginBottom: 10,
+  },
+  trendingHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
+    marginBottom: 16,
   },
 });

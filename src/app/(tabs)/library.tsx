@@ -38,6 +38,7 @@ import { usePullToRefresh } from "@/hooks/usePullToRefresh";
 // Màn hình Thư viện hiển thị danh sách phát cá nhân và các bài hát đã lưu với phân trang vô tận
 export default function LibraryScreen() {
   const playTrack = usePlayerStore((state) => state.playTrack);
+  const playAll = usePlayerStore((state) => state.playAll);
 
   const {
     playlists,
@@ -133,7 +134,12 @@ export default function LibraryScreen() {
   // Xử lý khi chọn phát một bài hát từ danh sách
   const handlePlaySong = (track: Track) => {
     triggerHaptic();
-    playTrack(track);
+    const index = sortedLibrarySongs.findIndex((s) => s._id === track._id);
+    if (index !== -1) {
+      playAll(sortedLibrarySongs, index);
+    } else {
+      playTrack(track);
+    }
   };
 
   // Xử lý xác nhận tạo danh sách phát mới từ hộp thoại nhập liệu đồng thời tự động lưu bài hát (nếu có)

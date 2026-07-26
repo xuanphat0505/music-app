@@ -2,27 +2,49 @@ name: Client CI
 
 on:
   pull_request:
-    branches: [ main, master, dev ]
+    branches:
+      - main
+      - master
+      - dev
+
+concurrency:
+  group: client-ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  check-client:
+  quality-check:
+    name: Quality Check
     runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [20]
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
+      - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: 'npm'
+          node-version: ${{ matrix.node-version }}
+          cache: npm
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Check TypeScript types
-        run: npx tsc --noEmit
+      - name: Check formatting
+        run: npm run format:check
+        continue-on-error: false
 
-      - name: Run linter
+      - name: Lint
         run: npm run lint
+
+      - name: Type Check
+        run: npm run typecheck
+
+      - name: Run Unit Tests
+        run: npm test -- --coverage --watch=false
+
+      - name: Verify Expo config
+        run: npx expo config --type public

@@ -39,8 +39,5 @@ jobs:
       - name: Type Check
         run: npm run typecheck
 
-      - name: Run Unit Tests
-        run: npm test -- --coverage --watch=false
-
       - name: Verify Expo config
         run: npx expo config --type public

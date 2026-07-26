@@ -77,10 +77,10 @@ export const FullPlayerModal: React.FC = () => {
 
   // Đồng bộ tiến trình bài hát từ store khi người dùng không kéo thanh trượt
   useEffect(() => {
-    if (!isDragging && localProgress !== progress) {
+    if (!isDragging) {
       setLocalProgress(progress);
     }
-  }, [progress, isDragging, localProgress]);
+  }, [progress, isDragging]);
 
   if (!currentTrack) return null;
 

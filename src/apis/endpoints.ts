@@ -15,6 +15,7 @@ export const ENDPOINTS = {
   USERS: {
     PROFILE: "/users/profile",
     SETTINGS: "/users/settings",
+    AVATAR: "/users/avatar",
   },
 
   // songs endpoint

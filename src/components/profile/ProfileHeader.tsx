@@ -2,6 +2,7 @@ import React from "react";
 import { StyleSheet, Text, View, Image } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { COLORS } from "@/constants/Colors";
+import { Feather } from "@expo/vector-icons";
 
 interface ProfileHeaderProps {
   username: string;
@@ -10,6 +11,9 @@ interface ProfileHeaderProps {
   playlistsCount: number;
   followingCount: number;
   minutesListened: string;
+  bio?: string;
+  location?: string;
+  website?: string;
 }
 
 // Component hiển thị thông tin đầu trang cá nhân gồm ảnh đại diện, tên tuổi, email và các chỉ số thống kê
@@ -20,6 +24,9 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
   playlistsCount,
   followingCount,
   minutesListened,
+  bio,
+  location,
+  website,
 }) => {
   return (
     <View style={styles.container}>
@@ -34,6 +41,31 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
 
       <Text style={styles.name}>{username}</Text>
       <Text style={styles.email}>{email}</Text>
+
+      {/* Hiển thị tiểu sử ngắn nếu người dùng có điền */}
+      {!!bio && (
+        <Text style={styles.bioText} numberOfLines={2}>
+          {bio}
+        </Text>
+      )}
+
+      {/* Hiển thị vị trí địa lý hoặc website cá nhân */}
+      {(!!location || !!website) && (
+        <View style={styles.infoRow}>
+          {!!location && (
+            <View style={styles.infoBadge}>
+              <Feather name="map-pin" size={10} color={COLORS.TEXT_SECONDARY} style={styles.infoIcon} />
+              <Text style={styles.infoText}>{location}</Text>
+            </View>
+          )}
+          {!!website && (
+            <View style={styles.infoBadge}>
+              <Feather name="link" size={10} color={COLORS.TEXT_SECONDARY} style={styles.infoIcon} />
+              <Text style={styles.infoText} numberOfLines={1}>{website}</Text>
+            </View>
+          )}
+        </View>
+      )}
 
       <LinearGradient
         colors={[COLORS.PRIMARY, COLORS.TERTIARY]}
@@ -145,5 +177,43 @@ const styles = StyleSheet.create({
     width: 1,
     height: 24,
     backgroundColor: "rgba(255, 255, 255, 0.1)",
+  },
+  bioText: {
+    fontSize: 13,
+    color: COLORS.TEXT_SECONDARY,
+    fontFamily: "Inter",
+    textAlign: "center",
+    paddingHorizontal: 30,
+    marginTop: -8,
+    marginBottom: 12,
+    lineHeight: 18,
+  },
+  infoRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 12,
+    marginBottom: 16,
+    flexWrap: "wrap",
+    paddingHorizontal: 20,
+  },
+  infoBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(255, 255, 255, 0.03)",
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.05)",
+  },
+  infoIcon: {
+    marginRight: 6,
+  },
+  infoText: {
+    fontSize: 11,
+    color: COLORS.TEXT_SECONDARY,
+    fontFamily: "Inter",
+    maxWidth: 150,
   },
 });

@@ -2,6 +2,14 @@ import { create } from "zustand";
 import { authApi } from "@/apis/authApi";
 import { registerAuthFailureCallback, loadTokensFromStorage, clearTokens } from "@/services/tokenService";
 
+interface Profile {
+  bio: string;
+  location: string;
+  website: string;
+  dateOfBirth?: string;
+  gender: string;
+}
+
 interface User {
   id: string;
   username: string;
@@ -9,6 +17,7 @@ interface User {
   avatar: string;
   role: string;
   settings?: any;
+  profile?: Profile;
 }
 
 interface AuthState {
@@ -20,6 +29,15 @@ interface AuthState {
   register: (email: string, username: string, password?: string) => Promise<boolean>;
   logout: () => Promise<void>;
   initialize: () => Promise<void>;
+  updateProfile: (data: {
+    username?: string;
+    bio?: string;
+    location?: string;
+    website?: string;
+    dateOfBirth?: string;
+    gender?: string;
+    avatar?: string;
+  }) => Promise<boolean>;
   setUser: (user: User | null) => void;
   setAuthenticated: (isAuthenticated: boolean) => void;
 }
@@ -46,6 +64,7 @@ export const useAuthStore = create<AuthState>((set) => ({
           avatar: user.avatar,
           role: user.role,
           settings: user.settings,
+          profile: user.profile,
         },
       });
       return true;
@@ -95,6 +114,7 @@ export const useAuthStore = create<AuthState>((set) => ({
             avatar: user.avatar,
             role: user.role,
             settings: user.settings,
+            profile: user.profile,
           },
           isAuthenticated: true,
         });
@@ -104,6 +124,29 @@ export const useAuthStore = create<AuthState>((set) => ({
       clearTokens();
     } finally {
       set({ isInitialized: true });
+    }
+  },
+
+  updateProfile: async (data) => {
+    set({ isLoading: true });
+    try {
+      const response: any = await authApi.updateProfile(data);
+      const user = response.data;
+      set((state) => ({
+        isLoading: false,
+        user: state.user
+          ? {
+              ...state.user,
+              username: user.username || state.user.username,
+              avatar: user.avatar || state.user.avatar,
+              profile: user.profile || state.user.profile,
+            }
+          : null,
+      }));
+      return true;
+    } catch (error) {
+      set({ isLoading: false });
+      throw error;
     }
   },
 

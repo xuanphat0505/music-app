@@ -38,4 +38,25 @@ export const authApi = {
   getProfile: async () => {
     return apiClient.get(ENDPOINTS.AUTH.ME);
   },
+
+  // upload ảnh đại diện
+  uploadAvatar: async (formData: FormData) => {
+    return apiClient.post(ENDPOINTS.USERS.AVATAR, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+  },
+
+  // cập nhật thông tin cá nhân
+  updateProfile: async (data: {
+    username?: string;
+    bio?: string;
+    location?: string;
+    website?: string;
+    dateOfBirth?: string;
+    gender?: string;
+  }) => {
+    return apiClient.put(ENDPOINTS.USERS.PROFILE, data);
+  },
 };

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { ScrollView, Alert, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
@@ -8,10 +8,12 @@ import {
   ProfileHeader,
   MusicDNASection,
   SettingsGroup,
+  EditProfileView,
 } from "@/components/profile";
 import { SettingItem, Artist } from "@/types";
 import { useAuth } from "@/hooks/useAuth";
 import { usePullToRefresh } from "@/hooks/usePullToRefresh";
+import { usePlaylistStore } from "@/store/playlistStore";
 
 const MOCK_TOP_ARTISTS: Artist[] = [
   {
@@ -53,10 +55,20 @@ export default function ProfileScreen() {
   const { user, logout, initialize } = useAuth();
   const [audioQuality, setAudioQuality] = useState("Lossless");
   const [cacheSize, setCacheSize] = useState("240 MB");
+  const [editModalVisible, setEditModalVisible] = useState(false);
+
+  const playlists = usePlaylistStore((state) => state.playlists);
+  const fetchPlaylists = usePlaylistStore((state) => state.fetchPlaylists);
+
+  // Tải danh sách phát của người dùng khi component được gắn vào màn hình
+  useEffect(() => {
+    fetchPlaylists();
+  }, []);
 
   // Hook quản lý tính năng kéo để làm mới (Pull to Refresh) dùng chung
   const { refreshControl } = usePullToRefresh(async () => {
     await initialize();
+    await fetchPlaylists();
   });
 
   // Hàm kích hoạt rung phản hồi nhẹ khi tương tác nút
@@ -72,10 +84,7 @@ export default function ProfileScreen() {
       label: "Edit Profile",
       onPress: () => {
         triggerHaptic();
-        Alert.alert(
-          "Profile",
-          "Chức năng chỉnh sửa hồ sơ đang được phát triển.",
-        );
+        setEditModalVisible(true);
       },
     },
     {
@@ -217,9 +226,12 @@ export default function ProfileScreen() {
             user?.avatar ||
             "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=150&auto=format&fit=crop"
           }
-          playlistsCount={12}
+          playlistsCount={playlists.length}
           followingCount={84}
           minutesListened="1,240"
+          bio={user?.profile?.bio}
+          location={user?.profile?.location}
+          website={user?.profile?.website}
         />
 
         {/* Phần thống kê sở thích âm nhạc */}
@@ -237,6 +249,12 @@ export default function ProfileScreen() {
         {/* Khoảng trống đệm cuối trang tránh bị MiniPlayer che khuất */}
         <View style={styles.bottomBuffer} />
       </ScrollView>
+
+      {/* Giao diện chỉnh sửa thông tin cá nhân Slide-in */}
+      <EditProfileView
+        visible={editModalVisible}
+        onClose={() => setEditModalVisible(false)}
+      />
     </SafeAreaView>
   );
 }

@@ -9,6 +9,7 @@ export const useAuth = () => {
   const register = useAuthStore((state) => state.register);
   const logout = useAuthStore((state) => state.logout);
   const initialize = useAuthStore((state) => state.initialize);
+  const updateProfile = useAuthStore((state) => state.updateProfile);
 
   return {
     user,
@@ -19,5 +20,6 @@ export const useAuth = () => {
     register,
     logout,
     initialize,
+    updateProfile,
   };
 };

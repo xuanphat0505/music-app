@@ -84,7 +84,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
         <View style={styles.divider} />
         <View style={styles.statItem}>
           <Text style={styles.statNumber}>{followingCount}</Text>
-          <Text style={styles.statLabel}>Following</Text>
+          <Text style={styles.statLabel}>Favorites</Text>
         </View>
         <View style={styles.divider} />
         <View style={styles.statItem}>

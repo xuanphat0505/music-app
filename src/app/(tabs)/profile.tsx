@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { ScrollView, Alert, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
@@ -14,6 +14,8 @@ import { SettingItem, Artist } from "@/types";
 import { useAuth } from "@/hooks/useAuth";
 import { usePullToRefresh } from "@/hooks/usePullToRefresh";
 import { usePlaylistStore } from "@/store/playlistStore";
+import { useLibraryStore } from "@/store/libraryStore";
+import { usePlayerStore } from "@/store/playerStore";
 import { CustomModal } from "@/components/common";
 
 const MOCK_TOP_ARTISTS: Artist[] = [
@@ -61,17 +63,71 @@ export default function ProfileScreen() {
 
   const playlists = usePlaylistStore((state) => state.playlists);
   const fetchPlaylists = usePlaylistStore((state) => state.fetchPlaylists);
+  const librarySongs = useLibraryStore((state) => state.librarySongs);
+  const librarySongIds = useLibraryStore((state) => state.librarySongIds);
+  const fetchLibraryData = useLibraryStore((state) => state.fetchLibraryData);
+  const recentlyPlayed = usePlayerStore((state) => state.recentlyPlayed);
 
-  // Tải danh sách phát của người dùng khi component được gắn vào màn hình
+  // Tải danh sách phát và dữ liệu thư viện nhạc của người dùng
   useEffect(() => {
     fetchPlaylists();
+    fetchLibraryData().catch(() => {});
   }, []);
 
   // Hook quản lý tính năng kéo để làm mới (Pull to Refresh) dùng chung
   const { refreshControl } = usePullToRefresh(async () => {
     await initialize();
     await fetchPlaylists();
+    await fetchLibraryData().catch(() => {});
   });
+
+  // Tính tổng số phút nghe nhạc có trong thư viện bài hát cá nhân
+  const totalLibMins = useMemo(() => {
+    const totalLibSeconds = librarySongs.reduce(
+      (acc, song) => acc + (song.duration || 0),
+      0,
+    );
+    return Math.round(totalLibSeconds / 60).toString();
+  }, [librarySongs]);
+
+  // Trích xuất các nghệ sĩ hàng đầu từ lịch sử nghe nhạc gần đây
+  const topArtists = useMemo(() => {
+    const list: Artist[] = [];
+    recentlyPlayed.forEach((track) => {
+      track.artists.forEach((artist) => {
+        if (
+          typeof artist !== "string" &&
+          !list.some((a) => a._id === artist._id)
+        ) {
+          list.push(artist);
+        }
+      });
+    });
+    return list.length > 0 ? list.slice(0, 4) : MOCK_TOP_ARTISTS;
+  }, [recentlyPlayed]);
+
+  // Trích xuất thể loại nhạc hàng đầu từ thư viện và lịch sử nghe nhạc gần đây
+  const topGenres = useMemo(() => {
+    const genresList: string[] = [];
+    [...recentlyPlayed, ...librarySongs].forEach((track) => {
+      if (track.genre) {
+        genresList.push(track.genre);
+      }
+    });
+
+    if (genresList.length === 0) {
+      return ["Electronic", "Lo-Fi", "Ambient", "Future Bass"];
+    }
+
+    const freqs = genresList.reduce<Record<string, number>>((acc, g) => {
+      acc[g] = (acc[g] || 0) + 1;
+      return acc;
+    }, {});
+
+    return Object.keys(freqs)
+      .sort((a, b) => freqs[b] - freqs[a])
+      .slice(0, 4);
+  }, [recentlyPlayed, librarySongs]);
 
   // Hàm kích hoạt rung phản hồi nhẹ khi tương tác nút
   const triggerHaptic = () => {
@@ -226,8 +282,8 @@ export default function ProfileScreen() {
             "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=150&auto=format&fit=crop"
           }
           playlistsCount={playlists.length}
-          followingCount={84}
-          minutesListened="1,240"
+          followingCount={librarySongIds.length}
+          minutesListened={totalLibMins}
           bio={user?.profile?.bio}
           location={user?.profile?.location}
           website={user?.profile?.website}
@@ -235,8 +291,8 @@ export default function ProfileScreen() {
 
         {/* Phần thống kê sở thích âm nhạc */}
         <MusicDNASection
-          topGenres={["Electronic", "Lo-Fi", "Ambient", "Future Bass"]}
-          topArtists={MOCK_TOP_ARTISTS}
+          topGenres={topGenres}
+          topArtists={topArtists}
         />
 
         {/* Các nhóm thiết lập chi tiết */}

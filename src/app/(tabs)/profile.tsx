@@ -14,6 +14,7 @@ import { SettingItem, Artist } from "@/types";
 import { useAuth } from "@/hooks/useAuth";
 import { usePullToRefresh } from "@/hooks/usePullToRefresh";
 import { usePlaylistStore } from "@/store/playlistStore";
+import { CustomModal } from "@/components/common";
 
 const MOCK_TOP_ARTISTS: Artist[] = [
   {
@@ -56,6 +57,7 @@ export default function ProfileScreen() {
   const [audioQuality, setAudioQuality] = useState("Lossless");
   const [cacheSize, setCacheSize] = useState("240 MB");
   const [editModalVisible, setEditModalVisible] = useState(false);
+  const [logoutModalVisible, setLogoutModalVisible] = useState(false);
 
   const playlists = usePlaylistStore((state) => state.playlists);
   const fetchPlaylists = usePlaylistStore((state) => state.fetchPlaylists);
@@ -199,10 +201,7 @@ export default function ProfileScreen() {
         Haptics.notificationAsync(
           Haptics.NotificationFeedbackType.Warning,
         ).catch(() => {});
-        Alert.alert("Logout", "Bạn có chắc chắn muốn đăng xuất tài khoản?", [
-          { text: "Hủy", style: "cancel" },
-          { text: "Đăng xuất", style: "destructive", onPress: () => logout() },
-        ]);
+        setLogoutModalVisible(true);
       },
     },
   ];
@@ -254,6 +253,20 @@ export default function ProfileScreen() {
       <EditProfileView
         visible={editModalVisible}
         onClose={() => setEditModalVisible(false)}
+      />
+
+      {/* Hộp thoại xác nhận đăng xuất tùy chỉnh */}
+      <CustomModal
+        visible={logoutModalVisible}
+        onClose={() => setLogoutModalVisible(false)}
+        title="Đăng xuất"
+        message="Bạn có chắc chắn muốn đăng xuất tài khoản?"
+        icon="log-out"
+        iconColor="#ef4444"
+        cancelText="Hủy"
+        confirmText="Đăng xuất"
+        onConfirm={logout}
+        isConfirmDestructive={true}
       />
     </SafeAreaView>
   );

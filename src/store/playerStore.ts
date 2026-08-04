@@ -34,6 +34,8 @@ interface PlayerState {
   playNextTrack: () => void;
   playPrevTrack: () => void;
   toggleShuffle: () => void;
+  volume: number;
+  setVolume: (volume: number) => void;
 }
 
 // Khởi tạo kho lưu trữ trạng thái phát nhạc toàn cục của ứng dụng giúp điều phối hoạt động phát nhạc
@@ -47,6 +49,7 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
   isFullPlayerVisible: false,
   currentLyrics: null,
   isLyricsLoading: false,
+  volume: 1.0,
 
   // Trạng thái khởi tạo hàng đợi
   queue: [],
@@ -197,4 +200,7 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
 
   // Hàm đặt lại trạng thái lời bài hát về trống
   resetLyrics: () => set({ currentLyrics: null, isLyricsLoading: false }),
+
+  // Hàm cập nhật âm lượng phát nhạc
+  setVolume: (volume) => set({ volume }),
 }));

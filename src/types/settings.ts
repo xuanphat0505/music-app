@@ -4,6 +4,10 @@ export interface SettingItem {
   icon: string;
   label: string;
   value?: string;
-  onPress: () => void;
+  onPress?: () => void;
   isDestructive?: boolean;
+  isSlider?: boolean;
+  sliderValue?: number;
+  onSliderValueChange?: (val: number) => void;
+  onSliderSlidingComplete?: (val: number) => void;
 }

@@ -48,10 +48,12 @@ export class AudioService {
     let lastSpotifyId: string | null = null;
     let lastIsPlaying = false;
     let hasTrack = false;
+    let lastVolume = 1.0;
 
     usePlayerStore.subscribe((state) => {
       const currentTrack = state.currentTrack;
       const isPlaying = state.isPlaying;
+      const volume = state.volume;
 
       const trackChanged =
         currentTrack &&
@@ -76,6 +78,16 @@ export class AudioService {
         lastIsPlaying = false;
         hasTrack = false;
         this.stop().catch(() => {});
+      }
+
+      // Cập nhật âm lượng cho trình phát nhạc khi người dùng thay đổi âm lượng
+      if (volume !== lastVolume) {
+        lastVolume = volume;
+        if (this.sound) {
+          try {
+            this.sound.volume = volume;
+          } catch {}
+        }
       }
     });
   }
@@ -144,6 +156,8 @@ export class AudioService {
       }
 
       this.sound = player;
+      // Gán âm lượng hiện tại từ store cho player mới khởi tạo
+      player.volume = usePlayerStore.getState().volume;
 
       this.statusSubscription = player.addListener(
         "playbackStatusUpdate",

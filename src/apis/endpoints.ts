@@ -47,6 +47,7 @@ export const ENDPOINTS = {
     TOGGLE: (songId: string) => `/libraries/toggle/${songId}`,
     SONGS: "/libraries/songs",
     IDS: "/libraries/ids",
+    TOP_ARTISTS: "/libraries/top-artists",
   },
 
   // playlists endpoint

@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { libraryApi } from "@/apis/libraryApi";
-import { Track } from "@/types";
+import { Track, Artist } from "@/types";
 import { LIBRARY_PAGE_LIMIT } from "@/constants/config";
 
 interface LibraryState {
@@ -18,6 +18,8 @@ interface LibraryState {
   fetchNextPage: () => Promise<void>;
   toggleSong: (song: Track) => Promise<void>;
   isSongInLibrary: (songId: string) => boolean;
+  topArtists: Artist[];
+  fetchTopArtists: () => Promise<void>;
 }
 
 // Zustand store quản lý trạng thái toàn cục cho thư viện bài hát cá nhân
@@ -32,6 +34,7 @@ export const useLibraryStore = create<LibraryState>((set, get) => ({
   isInitialized: false,
   error: null,
   pendingToggles: new Set<string>(),
+  topArtists: [],
 
   // Tải danh sách bài hát trang đầu tiên và mảng ID từ server về store
   fetchLibraryData: async (isRefresh = true) => {
@@ -137,5 +140,15 @@ export const useLibraryStore = create<LibraryState>((set, get) => ({
   // Kiểm tra xem bài hát có thuộc mảng ID bài hát đã lưu trong store hay không
   isSongInLibrary: (songId: string) => {
     return get().librarySongIds.includes(songId);
+  },
+
+  // Tải danh sách nghệ sĩ yêu thích hàng đầu từ API backend
+  fetchTopArtists: async () => {
+    try {
+      const data = await libraryApi.getTopArtists();
+      set({ topArtists: data || [] });
+    } catch {
+      // bỏ qua lỗi nếu không tải được top artists từ backend
+    }
   },
 }));

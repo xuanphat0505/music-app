@@ -1,6 +1,7 @@
 import React from "react";
 import { StyleSheet, Text, View, TouchableOpacity } from "react-native";
 import { Feather } from "@expo/vector-icons";
+import Slider from "@react-native-community/slider";
 import { COLORS } from "@/constants/Colors";
 import { GlassView } from "@/components/common";
 import { SettingItem } from "@/types";
@@ -16,43 +17,78 @@ export const SettingsGroup: React.FC<SettingsGroupProps> = ({ title, items }) =>
     <View style={styles.container}>
       <Text style={styles.groupTitle}>{title}</Text>
       <GlassView style={styles.groupCard}>
-        {items.map((item, index) => (
-          <TouchableOpacity
-            key={item.id}
-            style={[
-              styles.settingRow,
-              index < items.length - 1 && styles.borderBottom,
-            ]}
-            activeOpacity={0.7}
-            onPress={item.onPress}
-          >
-            <View style={styles.leftContainer}>
-              <Feather
-                name={item.icon as any}
-                size={18}
-                color={item.isDestructive ? "#ef4444" : COLORS.TEXT_SECONDARY}
-                style={styles.icon}
-              />
-              <Text
-                style={[
-                  styles.label,
-                  item.isDestructive && styles.destructiveText,
-                ]}
-              >
-                {item.label}
-              </Text>
-            </View>
+        {items.map((item, index) => {
+          const isLast = index === items.length - 1;
+          const rowStyle = [
+            styles.settingRow,
+            !isLast && styles.borderBottom,
+          ];
 
-            <View style={styles.rightContainer}>
-              {item.value && <Text style={styles.valueText}>{item.value}</Text>}
-              <Feather
-                name="chevron-right"
-                size={16}
-                color="rgba(255, 255, 255, 0.2)"
-              />
-            </View>
-          </TouchableOpacity>
-        ))}
+          if (item.isSlider) {
+            return (
+              <View key={item.id} style={rowStyle}>
+                <View style={styles.leftContainer}>
+                  <Feather
+                    name={item.icon as any}
+                    size={18}
+                    color={COLORS.TEXT_SECONDARY}
+                    style={styles.icon}
+                  />
+                  <Text style={styles.label}>{item.label}</Text>
+                </View>
+                <View style={styles.sliderContainer}>
+                  <Slider
+                    style={styles.inlineSlider}
+                    minimumValue={0}
+                    maximumValue={1}
+                    value={item.sliderValue}
+                    onValueChange={item.onSliderValueChange}
+                    onSlidingComplete={item.onSliderSlidingComplete}
+                    minimumTrackTintColor={COLORS.PRIMARY}
+                    maximumTrackTintColor="rgba(255, 255, 255, 0.1)"
+                    thumbTintColor="#ffffff"
+                  />
+                  {item.value && <Text style={styles.valueText}>{item.value}</Text>}
+                </View>
+              </View>
+            );
+          }
+
+          return (
+            <TouchableOpacity
+              key={item.id}
+              style={rowStyle}
+              activeOpacity={0.7}
+              onPress={item.onPress}
+            >
+              <View style={styles.leftContainer}>
+                <Feather
+                  name={item.icon as any}
+                  size={18}
+                  color={item.isDestructive ? "#ef4444" : COLORS.TEXT_SECONDARY}
+                  style={styles.icon}
+                />
+                <Text
+                  style={[
+                    styles.label,
+                    item.isDestructive && styles.destructiveText,
+                  ]}
+                >
+                  {item.label}
+                </Text>
+              </View>
+
+              <View style={styles.rightContainer}>
+                {item.value && <Text style={styles.valueText}>{item.value}</Text>}
+                <Feather
+                  name="chevron-right"
+                  size={16}
+                  color="rgba(255, 255, 255, 0.2)"
+                />
+              </View>
+            </TouchableOpacity>
+          );
+        })}
       </GlassView>
     </View>
   );
@@ -84,6 +120,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingHorizontal: 16,
     paddingVertical: 14,
+    minHeight: 52,
   },
   borderBottom: {
     borderBottomWidth: 1,
@@ -114,5 +151,16 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: COLORS.TEXT_SECONDARY,
     fontFamily: "Inter",
+  },
+  sliderContainer: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    marginLeft: 16,
+    gap: 8,
+  },
+  inlineSlider: {
+    flex: 1,
+    height: 40,
   },
 });

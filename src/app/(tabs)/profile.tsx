@@ -2,6 +2,8 @@ import React, { useState, useEffect, useMemo } from "react";
 import { ScrollView, Alert, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
+import * as SecureStore from "expo-secure-store";
+import * as FileSystem from "expo-file-system/legacy";
 
 import { COLORS } from "@/constants/Colors";
 import {
@@ -18,60 +20,69 @@ import { useLibraryStore } from "@/store/libraryStore";
 import { usePlayerStore } from "@/store/playerStore";
 import { CustomModal } from "@/components/common";
 
-const MOCK_TOP_ARTISTS: Artist[] = [
-  {
-    _id: "a1",
-    spotifyId: "spotify-a1",
-    name: "LUN",
-    username: "lun_music",
-    avatar:
-      "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=150&auto=format&fit=crop",
-  },
-  {
-    _id: "a2",
-    spotifyId: "spotify-a2",
-    name: "Pulse Engine",
-    username: "pulse_engine",
-    avatar:
-      "https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?q=80&w=150&auto=format&fit=crop",
-  },
-  {
-    _id: "a3",
-    spotifyId: "spotify-a3",
-    name: "Azure Dreams",
-    username: "azure_dreams",
-    avatar:
-      "https://images.unsplash.com/photo-1498038432885-c6f3f1b912ee?q=80&w=150&auto=format&fit=crop",
-  },
-  {
-    _id: "a4",
-    spotifyId: "spotify-a4",
-    name: "Orion",
-    username: "orion_drift",
-    avatar:
-      "https://images.unsplash.com/photo-1478760329108-5c3ed9d495a0?q=80&w=150&auto=format&fit=crop",
-  },
-];
-
 // Màn hình thông tin cá nhân hiển thị chi tiết hồ sơ người dùng và các thiết lập nâng cao
 export default function ProfileScreen() {
   const { user, logout, initialize } = useAuth();
-  const [audioQuality, setAudioQuality] = useState("Lossless");
-  const [cacheSize, setCacheSize] = useState("240 MB");
+  const [cacheSize, setCacheSize] = useState("0 KB");
+
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [logoutModalVisible, setLogoutModalVisible] = useState(false);
+  const [cacheModalVisible, setCacheModalVisible] = useState(false);
 
   const playlists = usePlaylistStore((state) => state.playlists);
   const fetchPlaylists = usePlaylistStore((state) => state.fetchPlaylists);
   const librarySongs = useLibraryStore((state) => state.librarySongs);
   const librarySongIds = useLibraryStore((state) => state.librarySongIds);
   const fetchLibraryData = useLibraryStore((state) => state.fetchLibraryData);
+  const topArtists = useLibraryStore((state) => state.topArtists);
+  const fetchTopArtists = useLibraryStore((state) => state.fetchTopArtists);
   const recentlyPlayed = usePlayerStore((state) => state.recentlyPlayed);
 
-  // Tải danh sách phát và dữ liệu thư viện nhạc của người dùng
+  const playerVolume = usePlayerStore((state) => state.volume);
+  const setPlayerVolume = usePlayerStore((state) => state.setVolume);
+
+  // Đo dung lượng cache thực tế trên thiết bị
+  const updateCacheSize = async () => {
+    const cacheDir = FileSystem.cacheDirectory;
+    if (!cacheDir) return;
+    try {
+      const files = await FileSystem.readDirectoryAsync(cacheDir);
+      let size = 0;
+      for (const fileName of files) {
+        const fileInfo = await FileSystem.getInfoAsync(cacheDir + fileName);
+        if (fileInfo.exists && !fileInfo.isDirectory) {
+          size += fileInfo.size;
+        }
+      }
+      if (size >= 1024 * 1024) {
+        setCacheSize(`${(size / (1024 * 1024)).toFixed(1)} MB`);
+      } else if (size >= 1024) {
+        setCacheSize(`${(size / 1024).toFixed(0)} KB`);
+      } else {
+        setCacheSize("0 KB");
+      }
+    } catch {
+      setCacheSize("0 KB");
+    }
+  };
+
+  // Tải cấu hình cài đặt từ bộ nhớ thiết bị
+  const loadSavedSettings = async () => {
+    try {
+      const vol = await SecureStore.getItemAsync("player_volume");
+      if (vol) {
+        setPlayerVolume(parseFloat(vol));
+      }
+    } catch {}
+  };
+
+  // Tải danh sách phát, dữ liệu thư viện nhạc và cài đặt người dùng
   useEffect(() => {
     fetchPlaylists();
     fetchLibraryData().catch(() => {});
+    fetchTopArtists().catch(() => {});
+    loadSavedSettings().catch(() => {});
+    updateCacheSize().catch(() => {});
   }, []);
 
   // Hook quản lý tính năng kéo để làm mới (Pull to Refresh) dùng chung
@@ -79,6 +90,9 @@ export default function ProfileScreen() {
     await initialize();
     await fetchPlaylists();
     await fetchLibraryData().catch(() => {});
+    await fetchTopArtists().catch(() => {});
+    await loadSavedSettings().catch(() => {});
+    await updateCacheSize().catch(() => {});
   });
 
   // Tính tổng số phút nghe nhạc có trong thư viện bài hát cá nhân
@@ -90,8 +104,11 @@ export default function ProfileScreen() {
     return Math.round(totalLibSeconds / 60).toString();
   }, [librarySongs]);
 
-  // Trích xuất các nghệ sĩ hàng đầu từ lịch sử nghe nhạc gần đây
-  const topArtists = useMemo(() => {
+  // Lấy danh sách nghệ sĩ hàng đầu (ưu tiên dữ liệu từ API -> lịch sử phát nhạc gần đây -> dữ liệu giả lập)
+  const displayTopArtists = useMemo(() => {
+    if (topArtists && topArtists.length > 0) {
+      return topArtists.slice(0, 4);
+    }
     const list: Artist[] = [];
     recentlyPlayed.forEach((track) => {
       track.artists.forEach((artist) => {
@@ -103,8 +120,8 @@ export default function ProfileScreen() {
         }
       });
     });
-    return list.length > 0 ? list.slice(0, 4) : MOCK_TOP_ARTISTS;
-  }, [recentlyPlayed]);
+    return list.slice(0, 4);
+  }, [topArtists, recentlyPlayed]);
 
   // Trích xuất thể loại nhạc hàng đầu từ thư viện và lịch sử nghe nhạc gần đây
   const topGenres = useMemo(() => {
@@ -160,38 +177,42 @@ export default function ProfileScreen() {
     },
   ];
 
+
+
+  const handleClearCache = async () => {
+    const cacheDir = FileSystem.cacheDirectory;
+    if (!cacheDir) return;
+    try {
+      const files = await FileSystem.readDirectoryAsync(cacheDir);
+      for (const fileName of files) {
+        await FileSystem.deleteAsync(cacheDir + fileName, { idempotent: true });
+      }
+      await updateCacheSize();
+      Alert.alert("Thành công", "Đã dọn dẹp toàn bộ bộ nhớ đệm bài hát.");
+    } catch {
+      Alert.alert("Lỗi", "Không thể dọn dẹp bộ nhớ đệm.");
+    }
+  };
+
+  const handleVolumeChange = (val: number) => {
+    setPlayerVolume(val);
+  };
+
+  const handleSaveVolume = async () => {
+    await SecureStore.setItemAsync("player_volume", playerVolume.toString()).catch(() => {});
+  };
+
   // Các thiết lập thuộc nhóm Trải nghiệm Âm thanh
   const audioItems: SettingItem[] = [
     {
-      id: "audio_quality",
-      icon: "sliders",
-      label: "Audio Quality",
-      value: audioQuality,
-      onPress: () => {
-        triggerHaptic();
-        Alert.alert(
-          "Audio Quality",
-          "Chọn chất lượng âm thanh mong muốn:",
-          [
-            { text: "Normal", onPress: () => setAudioQuality("Normal") },
-            { text: "High", onPress: () => setAudioQuality("High") },
-            {
-              text: "Lossless (Hi-Fi)",
-              onPress: () => setAudioQuality("Lossless"),
-            },
-          ],
-          { cancelable: true },
-        );
-      },
-    },
-    {
-      id: "equalizer",
-      icon: "music",
-      label: "Equalizer",
-      onPress: () => {
-        triggerHaptic();
-        Alert.alert("Equalizer", "Bộ chỉnh âm EQ đang được thiết kế cấu hình.");
-      },
+      id: "volume",
+      icon: "volume-2",
+      label: "Volume",
+      value: `${Math.round(playerVolume * 100)}%`,
+      isSlider: true,
+      sliderValue: playerVolume,
+      onSliderValueChange: handleVolumeChange,
+      onSliderSlidingComplete: handleSaveVolume,
     },
     {
       id: "clear_cache",
@@ -200,21 +221,7 @@ export default function ProfileScreen() {
       value: cacheSize,
       onPress: () => {
         triggerHaptic();
-        Alert.alert(
-          "Clear Cache",
-          "Bạn có chắc chắn muốn xóa bộ nhớ đệm bài hát offline?",
-          [
-            { text: "Hủy", style: "cancel" },
-            {
-              text: "Xóa",
-              style: "destructive",
-              onPress: () => {
-                setCacheSize("0 KB");
-                Alert.alert("Thành công", "Đã dọn dẹp bộ nhớ cache.");
-              },
-            },
-          ],
-        );
+        setCacheModalVisible(true);
       },
     },
   ];
@@ -290,10 +297,7 @@ export default function ProfileScreen() {
         />
 
         {/* Phần thống kê sở thích âm nhạc */}
-        <MusicDNASection
-          topGenres={topGenres}
-          topArtists={topArtists}
-        />
+        <MusicDNASection topGenres={topGenres} topArtists={displayTopArtists} />
 
         {/* Các nhóm thiết lập chi tiết */}
         <SettingsGroup title="Account" items={accountItems} />
@@ -324,6 +328,20 @@ export default function ProfileScreen() {
         onConfirm={logout}
         isConfirmDestructive={true}
       />
+
+      {/* Hộp thoại xác nhận xóa bộ nhớ đệm */}
+      <CustomModal
+        visible={cacheModalVisible}
+        onClose={() => setCacheModalVisible(false)}
+        title="Xóa bộ nhớ đệm"
+        message={`Bạn có chắc chắn muốn xóa bộ nhớ đệm bài hát offline?\nDung lượng hiện tại: ${cacheSize}`}
+        icon="database"
+        iconColor="#ef4444"
+        cancelText="Hủy"
+        confirmText="Xóa đệm"
+        onConfirm={handleClearCache}
+        isConfirmDestructive={true}
+      />
     </SafeAreaView>
   );
 }
@@ -349,5 +367,51 @@ const styles = StyleSheet.create({
   },
   bottomBuffer: {
     height: 100,
+  },
+  modalOptionList: {
+    width: "100%",
+    marginVertical: 12,
+  },
+  modalOptionItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    backgroundColor: "rgba(255, 255, 255, 0.02)",
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.04)",
+  },
+  modalOptionText: {
+    fontSize: 14,
+    color: COLORS.TEXT_SECONDARY,
+    fontFamily: "Inter",
+  },
+  modalOptionTextActive: {
+    color: COLORS.PRIMARY,
+    fontWeight: "700",
+  },
+  volumeSliderContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    width: "100%",
+    paddingHorizontal: 12,
+    marginVertical: 16,
+  },
+  volumeSlider: {
+    flex: 1,
+    height: 40,
+    marginHorizontal: 12,
+  },
+  volumePercentage: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: COLORS.TEXT_PRIMARY,
+    fontFamily: "Outfit",
+    marginBottom: 16,
+    textAlign: "center",
   },
 });

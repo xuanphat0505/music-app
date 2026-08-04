@@ -24,4 +24,10 @@ export const libraryApi = {
     const response: any = await apiClient.get(ENDPOINTS.LIBRARIES.IDS);
     return response.data;
   },
+
+  // Lấy danh sách nghệ sĩ yêu thích hàng đầu dựa trên bài hát trong thư viện
+  getTopArtists: async (): Promise<any[]> => {
+    const response: any = await apiClient.get(ENDPOINTS.LIBRARIES.TOP_ARTISTS);
+    return response.data;
+  },
 };

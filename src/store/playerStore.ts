@@ -36,6 +36,8 @@ interface PlayerState {
   toggleShuffle: () => void;
   volume: number;
   setVolume: (volume: number) => void;
+  isRepeatEnabled: boolean;
+  toggleRepeat: () => void;
 }
 
 // Khởi tạo kho lưu trữ trạng thái phát nhạc toàn cục của ứng dụng giúp điều phối hoạt động phát nhạc
@@ -50,6 +52,7 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
   currentLyrics: null,
   isLyricsLoading: false,
   volume: 1.0,
+  isRepeatEnabled: false,
 
   // Trạng thái khởi tạo hàng đợi
   queue: [],
@@ -78,6 +81,7 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
         isBuffering: true,
         recentlyPlayed: updatedList,
         currentLyrics: null, // Reset lời bài hát cũ
+        isRepeatEnabled: false, // Tự động tắt chế độ lặp lại khi chuyển bài mới
       };
     });
   },
@@ -203,4 +207,7 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
 
   // Hàm cập nhật âm lượng phát nhạc
   setVolume: (volume) => set({ volume }),
+
+  // Hàm bật/tắt chế độ lặp lại bài hát hiện tại
+  toggleRepeat: () => set((state) => ({ isRepeatEnabled: !state.isRepeatEnabled })),
 }));

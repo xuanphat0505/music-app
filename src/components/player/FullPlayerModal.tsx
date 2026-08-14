@@ -48,11 +48,12 @@ export const FullPlayerModal: React.FC = () => {
     playNextTrack,
     playPrevTrack,
     toggleShuffle,
+    isRepeatEnabled,
+    toggleRepeat,
   } = usePlayerStore();
 
   const [isDragging, setIsDragging] = useState(false);
   const [localProgress, setLocalProgress] = useState(0);
-  const [isRepeat, setIsRepeat] = useState(false);
   const [showLyrics, setShowLyrics] = useState(false);
 
   const [isAddToPlaylistVisible, setIsAddToPlaylistVisible] = useState(false);
@@ -114,7 +115,7 @@ export const FullPlayerModal: React.FC = () => {
   // Hàm xử lý bật/tắt nút Repeat
   const handleToggleRepeat = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
-    setIsRepeat(!isRepeat);
+    toggleRepeat();
   };
 
   // Hàm xử lý khi bắt đầu kéo thanh trượt
@@ -277,7 +278,7 @@ export const FullPlayerModal: React.FC = () => {
               <Feather
                 name="repeat"
                 size={22}
-                color={isRepeat ? COLORS.PRIMARY : "rgba(255, 255, 255, 0.4)"}
+                color={isRepeatEnabled ? COLORS.PRIMARY : "rgba(255, 255, 255, 0.4)"}
               />
             </TouchableOpacity>
           </View>

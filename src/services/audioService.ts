@@ -248,13 +248,24 @@ export class AudioService {
     }
   }
 
-  // Xử lý tự động phát bài hát tiếp theo khi bài hát phát hết thời lượng
+  // Xử lý tự động phát bài hát tiếp theo hoặc lặp lại khi bài hát phát hết thời lượng
   private async handlePlaybackFinished() {
-    const { queue, playNextTrack, togglePlay, setProgress, setIsBuffering } =
+    const { queue, playNextTrack, togglePlay, setProgress, setIsBuffering, isRepeatEnabled } =
       usePlayerStore.getState();
 
     setIsBuffering(false);
     setProgress(0);
+
+    // Nếu người dùng chọn lặp lại bài hiện tại (Repeat One)
+    if (isRepeatEnabled && this.sound) {
+      try {
+        await this.sound.seekTo(0);
+        this.sound.play();
+        return; // Kết thúc sớm để tránh nhảy bài tiếp theo
+      } catch {
+        // bỏ qua lỗi khi thực hiện tua lặp bài hát
+      }
+    }
 
     // Nếu trong hàng đợi còn bài hát thì tự động chuyển bài tiếp theo mượt mà
     if (queue && queue.length > 0) {

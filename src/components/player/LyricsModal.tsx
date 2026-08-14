@@ -69,7 +69,7 @@ export const LyricsModal: React.FC<LyricsModalProps> = ({ visible, onClose }) =>
 
           {/* Vùng hiển thị danh sách lời bài hát chạy chữ */}
           <View style={styles.content}>
-            <LyricsView />
+            <LyricsView visible={visible} />
           </View>
         </SafeAreaView>
       </View>

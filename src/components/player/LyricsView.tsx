@@ -75,7 +75,7 @@ const LyricLineItem: React.FC<LyricLineItemProps> = React.memo(({
 LyricLineItem.displayName = "LyricLineItem";
 
 // Component hiển thị danh sách lời bài hát tương tác dạng bản ghi có mốc thời gian
-export const LyricsView: React.FC = () => {
+export const LyricsView: React.FC<{ visible?: boolean }> = ({ visible = true }) => {
   const {
     currentTrack,
     currentLyrics,
@@ -109,16 +109,16 @@ export const LyricsView: React.FC = () => {
     });
   }, [progress, parsedLines]);
 
-  // Tự động cuộn mượt mà đến câu hát hiện tại mỗi khi activeIndex thay đổi
+  // Tự động cuộn mượt mà đến câu hát hiện tại mỗi khi activeIndex thay đổi và modal được hiển thị
   useEffect(() => {
-    if (activeIndex >= 0 && parsedLines.length > 0) {
+    if (visible && activeIndex >= 0 && parsedLines.length > 0) {
       flatListRef.current?.scrollToIndex({
         index: activeIndex,
         animated: true,
         viewPosition: 0.3, // Đặt dòng active ở khoảng 1/3 chiều cao màn hình để tối ưu trải nghiệm đọc
       });
     }
-  }, [activeIndex, parsedLines.length]);
+  }, [visible, activeIndex, parsedLines.length]);
 
   // Xử lý tua nhạc tới vị trí thời gian của câu hát được chọn và phát rung xúc giác nhẹ
   const handleLinePress = useCallback((timeMs: number) => {
@@ -158,11 +158,13 @@ export const LyricsView: React.FC = () => {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.listContent}
           onScrollToIndexFailed={(info) => {
-            // Sử dụng scrollToOffset dựa trên ước lượng khoảng cách để tránh đệ quy vô hạn gây tràn call stack
-            flatListRef.current?.scrollToOffset({
-              offset: info.averageItemLength * info.index,
-              animated: false,
-            });
+            // Đưa vào setTimeout để chuyển sang macrotask queue, tránh đệ quy đồng bộ gây tràn call stack
+            setTimeout(() => {
+              flatListRef.current?.scrollToOffset({
+                offset: info.averageItemLength * info.index,
+                animated: false,
+              });
+            }, 0);
           }}
           renderItem={({ item, index }) => {
             const isActive = index === activeIndex;

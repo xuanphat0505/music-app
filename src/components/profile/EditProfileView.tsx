@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   StyleSheet,
   Text,
@@ -18,6 +18,7 @@ import { COLORS } from "@/constants/Colors";
 import { useEditProfile } from "@/hooks/useEditProfile";
 import { ImageCropModal } from "./ImageCropModal";
 import { ImageMenu } from "./ImageMenu";
+import ImageView from "react-native-image-viewing";
 
 interface EditProfileViewProps {
   visible: boolean;
@@ -58,6 +59,8 @@ export const EditProfileView: React.FC<EditProfileViewProps> = ({
     handleCropComplete,
     handleSave,
   } = useEditProfile({ visible, onClose });
+  // image viewer state
+  const [isImageViewerVisible, setIsImageViewerVisible] = useState(false);
 
   // Hiển thị lựa chọn giới tính dạng chip
   const renderGenderOption = (val: string, label: string) => {
@@ -231,7 +234,10 @@ export const EditProfileView: React.FC<EditProfileViewProps> = ({
         </KeyboardAvoidingView>
 
         <ImageMenu
-          onViewAvatar={() => void {}} //TODO
+          onViewAvatar={() => {
+            closeAvatarMenu();
+            setIsImageViewerVisible(true);
+          }} //TODO
           visible={showAvatarMenu}
           menuAnim={menuAnim}
           onClose={closeAvatarMenu}
@@ -245,6 +251,13 @@ export const EditProfileView: React.FC<EditProfileViewProps> = ({
           imageUri={cropImageUri}
           onClose={() => setCropImageUri("")}
           onCropComplete={handleCropComplete}
+        />
+
+        <ImageView
+          images={avatarUri ? [{ uri: avatarUri }] : []}
+          imageIndex={0}
+          visible={isImageViewerVisible}
+          onRequestClose={() => setIsImageViewerVisible(false)}
         />
       </SafeAreaView>
     </Animated.View>

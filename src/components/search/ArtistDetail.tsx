@@ -16,9 +16,12 @@ import { useArtistDetail, useArtistSongs } from "@/hooks/useArtists";
 import { useLibrarySongs } from "@/hooks/useLibrarySongs";
 import { usePlayerStore } from "@/store/playerStore";
 import { usePullToRefresh } from "@/hooks/usePullToRefresh";
+import { usePlaylistStore } from "@/store/playlistStore";
 import { SongItem } from "@/components/common";
+import { AddToPlaylistModal, CreatePlaylistModal } from "@/components/library";
 import { Artist, Track } from "@/types";
 import { formatArtistNames } from "@/utils/artist";
+import { showSuccess } from "@/utils/toast";
 
 interface ArtistDetailProps {
   artist: Artist;
@@ -33,6 +36,11 @@ export const ArtistDetail: React.FC<ArtistDetailProps> = ({
   const playAll = usePlayerStore((state) => state.playAll);
   const [isFollowing, setIsFollowing] = useState(false);
   const { isSongInLibrary, toggleSong } = useLibrarySongs();
+  const { createPlaylist, addSongToPlaylist } = usePlaylistStore();
+
+  const [selectedTrackForPlaylist, setSelectedTrackForPlaylist] = useState<Track | null>(null);
+  const [isAddToPlaylistVisible, setIsAddToPlaylistVisible] = useState(false);
+  const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
 
   // Tải chi tiết nghệ sĩ nâng cao từ server
   const {
@@ -72,6 +80,31 @@ export const ArtistDetail: React.FC<ArtistDetailProps> = ({
     playAll(songs, index);
   };
 
+  // Mở hộp thoại thêm bài hát vào danh sách phát
+  const handleOpenAddToPlaylist = (track: Track) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+    setSelectedTrackForPlaylist(track);
+    setIsAddToPlaylistVisible(true);
+  };
+
+  // Tạo mới danh sách phát từ hộp thoại và lưu bài hát hiện tại vào đó
+  const handleCreatePlaylist = async (title: string, desc: string) => {
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+    const created = await createPlaylist(title, desc);
+    setIsCreateModalVisible(false);
+    if (created) {
+      if (selectedTrackForPlaylist) {
+        await addSongToPlaylist(created._id, selectedTrackForPlaylist);
+        setSelectedTrackForPlaylist(null);
+        showSuccess(`Đã tạo và thêm vào "${created.title}"`);
+      } else {
+        showSuccess(`Đã tạo danh sách phát "${created.title}"`);
+      }
+    } else {
+      setSelectedTrackForPlaylist(null);
+    }
+  };
+
   // Xử lý phát tất cả danh sách bài hát của nghệ sĩ dưới dạng hàng đợi từ bài đầu tiên
   const handlePlayAll = () => {
     if (songs.length === 0) return;
@@ -87,10 +120,10 @@ export const ArtistDetail: React.FC<ArtistDetailProps> = ({
     setIsFollowing(!isFollowing);
   };
 
-  // Xử lý thêm bớt bài hát của nghệ sĩ vào thư viện cá nhân
-  const handleToggleLibrary = (song: Track) => {
+  // Xử lý lưu/xóa thư viện cá nhân
+  const handleToggleLibrary = (track: Track) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
-    toggleSong(song);
+    toggleSong(track);
   };
 
   // Phần đầu danh sách chứa ảnh đại diện thông tin và tiểu sử nghệ sĩ
@@ -210,6 +243,7 @@ export const ArtistDetail: React.FC<ArtistDetailProps> = ({
                 isAdded={isSongInLibrary(item._id)}
                 onPress={() => handlePlaySong(item, index)}
                 onAddPress={() => handleToggleLibrary(item)}
+                onPlaylistPress={() => handleOpenAddToPlaylist(item)}
               />
             </View>
           )}
@@ -242,6 +276,30 @@ export const ArtistDetail: React.FC<ArtistDetailProps> = ({
           contentContainerStyle={styles.scrollContent}
         />
       )}
+
+      {/* Hộp thoại thêm bài hát vào danh sách phát */}
+      <AddToPlaylistModal
+        visible={isAddToPlaylistVisible}
+        track={selectedTrackForPlaylist}
+        onClose={() => {
+          setIsAddToPlaylistVisible(false);
+          setSelectedTrackForPlaylist(null);
+        }}
+        onCreatePlaylistPress={() => {
+          setIsAddToPlaylistVisible(false);
+          setIsCreateModalVisible(true);
+        }}
+      />
+
+      {/* Hộp thoại tạo mới danh sách phát */}
+      <CreatePlaylistModal
+        visible={isCreateModalVisible}
+        onClose={() => {
+          setIsCreateModalVisible(false);
+          setSelectedTrackForPlaylist(null);
+        }}
+        onCreate={handleCreatePlaylist}
+      />
     </View>
   );
 };

@@ -1,6 +1,7 @@
 import { Tabs } from "expo-router";
 import React, { useEffect } from "react";
-import { View, StyleSheet } from "react-native";
+import { View, StyleSheet, Platform } from "react-native";
+import { useSafeAreaInsets, initialWindowMetrics } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
 import { COLORS } from "@/constants/Colors";
 import { MiniPlayer } from "@/components/home";
@@ -10,6 +11,8 @@ import { AudioService } from "@/services/audioService";
 
 // Bộ bố cục TabLayout cấu hình định dạng thanh điều hướng Bottom Tab Bar
 export default function TabLayout() {
+  const insets = useSafeAreaInsets();
+
   useEffect(() => {
     // Khởi tạo thực thể AudioService để đăng ký theo dõi Zustand store
     AudioService.getInstance();
@@ -19,6 +22,12 @@ export default function TabLayout() {
       AudioService.getInstance().stop().catch(() => {});
     };
   }, []);
+
+  // Tính toán chiều cao và khoảng đệm dưới cho TabBar dựa trên Safe Area Insets của thiết bị (kết hợp initialWindowMetrics ngay khi khởi chạy)
+  const rawBottom = insets.bottom || initialWindowMetrics?.insets.bottom || 0;
+  const bottomPadding = rawBottom > 0 ? rawBottom : (Platform.OS === "android" ? 16 : 8);
+  const tabBarHeight = 56 + bottomPadding;
+
   return (
     <View style={styles.container}>
       <Tabs
@@ -26,7 +35,13 @@ export default function TabLayout() {
           tabBarActiveTintColor: COLORS.PRIMARY,
           tabBarInactiveTintColor: COLORS.TEXT_SECONDARY,
           headerShown: false,
-          tabBarStyle: styles.tabBar,
+          tabBarStyle: [
+            styles.tabBar,
+            {
+              height: tabBarHeight,
+              paddingBottom: bottomPadding,
+            },
+          ],
           tabBarShowLabel: true,
           tabBarLabelStyle: styles.tabBarLabel,
           tabBarItemStyle: styles.tabBarItem,

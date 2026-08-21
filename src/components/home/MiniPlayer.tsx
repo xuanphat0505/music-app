@@ -6,7 +6,9 @@ import {
   Image,
   TouchableOpacity,
   ActivityIndicator,
+  Platform,
 } from "react-native";
+import { useSafeAreaInsets, initialWindowMetrics } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
 import { COLORS } from "@/constants/Colors";
 import { GlassView } from "../common";
@@ -15,6 +17,7 @@ import { formatArtistNames } from "@/utils/artist";
 
 // Thành phần trình phát nhạc thu nhỏ thiết kế theo phong cách Caziq frosted glass
 export const MiniPlayer: React.FC = () => {
+  const insets = useSafeAreaInsets();
   const {
     currentTrack,
     isPlaying,
@@ -28,10 +31,15 @@ export const MiniPlayer: React.FC = () => {
 
   if (!currentTrack) return null;
 
+  // Tính toán chiều cao và khoảng đệm dưới của Tab Bar để đặt vị trí MiniPlayer khớp 100% ngay từ khi khởi chạy
+  const rawBottom = insets.bottom || initialWindowMetrics?.insets.bottom || 0;
+  const bottomPadding = rawBottom > 0 ? rawBottom : (Platform.OS === "android" ? 16 : 8);
+  const tabBarHeight = 56 + bottomPadding;
+
   const progressPercentage = duration > 0 ? (progress / duration) * 100 : 0;
 
   return (
-    <View style={styles.outerContainer}>
+    <View style={[styles.outerContainer, { bottom: tabBarHeight }]}>
       <GlassView style={styles.container}>
         <View style={styles.content}>
           <TouchableOpacity

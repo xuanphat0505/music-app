@@ -5,7 +5,7 @@ import {
 } from "@react-navigation/native";
 import { Slot } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { SafeAreaProvider } from "react-native-safe-area-context";
+import { SafeAreaProvider, initialWindowMetrics } from "react-native-safe-area-context";
 import "react-native-reanimated";
 import Toast from "react-native-toast-message";
 
@@ -17,7 +17,7 @@ export default function RootLayout() {
   const colorScheme = useColorScheme();
 
   return (
-    <SafeAreaProvider>
+    <SafeAreaProvider initialMetrics={initialWindowMetrics}>
       <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
         <Slot />
         <StatusBar style="auto" />

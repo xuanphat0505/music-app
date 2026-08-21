@@ -192,6 +192,7 @@ export const ImageCropModal: React.FC<ImageCropModalProps> = ({
       transparent
       animationType="slide"
       onRequestClose={onClose}
+      statusBarTranslucent={true}
     >
       <View style={styles.modalContainer}>
         {/* Thanh Header của Modal */}
